@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparison of Per Capita Waste and Population</title>
+    <link rel="stylesheet" href="https://use.typekit.net/ufh5wxj.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="panel-nav.css">
+    <script src="panel-nav.js" defer></script>
+    <style>
+        :root {
+            --bg: rgb(218, 210, 199);
+            --ink: #232323;
+            --frame-pad: 8px;
+            --frame-left-column: 250px;
+            --frame-right-column: 230px;
+            --frame-top-row: 58px;
+            --frame-bottom-row: 56px;
+            --asset-ratio: 1.2941176471;
+            --asset-zoom: 0.98;
+            --asset-shift-x: 0%;
+            --asset-shift-y: 0%;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            font-family: "oxanium", sans-serif;
+        }
+
+        header {
+            position: absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 40px;
+            box-sizing: border-box;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .logo {
+            font-size: 36px;
+            color: black;
+            text-decoration: none;
+            pointer-events: auto;
+        }
+
+        nav {
+            display: flex;
+            gap: 40px;
+            pointer-events: auto;
+        }
+
+        nav a {
+            font-size: 24px;
+            color: black;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        nav a:hover {
+            opacity: 0.5;
+        }
+
+        .active {
+            border-bottom: 2px solid black;
+        }
+
+        .page {
+            min-height: 100vh;
+            padding:
+                calc(var(--frame-pad) + var(--frame-top-row))
+                calc(var(--frame-pad) + var(--frame-right-column))
+                calc(var(--frame-pad) + var(--frame-bottom-row))
+                calc(var(--frame-pad) + var(--frame-left-column));
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .image-stage {
+            width: min(
+                calc(100vw - (var(--frame-left-column) + var(--frame-right-column) + (var(--frame-pad) * 2))),
+                calc((100vh - (var(--frame-top-row) + var(--frame-bottom-row) + (var(--frame-pad) * 2))) * var(--asset-ratio))
+            );
+            max-height: calc(100vh - (var(--frame-top-row) + var(--frame-bottom-row) + (var(--frame-pad) * 2)));
+            overflow: hidden;
+        }
+
+        .comparison-image {
+            display: block;
+            width: calc(var(--asset-zoom) * 100%);
+            height: auto;
+            max-width: none;
+            transform: translate(var(--asset-shift-x), var(--asset-shift-y));
+            transform-origin: top left;
+        }
+
+        @media (max-width: 920px) {
+            :root {
+                --frame-pad: 0px;
+                --frame-left-column: 0px;
+                --frame-right-column: 0px;
+                --frame-top-row: 66px;
+                --frame-bottom-row: 0px;
+                --asset-zoom: 0.98;
+                --asset-shift-x: 0%;
+                --asset-shift-y: 0%;
+            }
+
+            .page {
+                padding: calc(var(--frame-top-row) + 8px) 8px 96px;
+            }
+        }
+    </style>
+</head>
+<body data-panel-page="population-comparison">
+    <header>
+        <a href="index.html" class="logo">Error of Information</a>
+        <nav>
+            <a href="project1.html">Project 1</a>
+            <a href="project2.html" class="active">Project 2</a>
+        </nav>
+    </header>
+
+    <main class="page">
+        <section class="image-stage">
+            <img class="comparison-image" src="image/final3.png" alt="Comparison of Per Capita Waste Generation and Population by Province">
+        </section>
+    </main>
+</body>
+</html>

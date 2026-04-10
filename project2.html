@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 2</title>
+    <link rel="stylesheet" href="https://use.typekit.net/ufh5wxj.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="panel-nav.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="panel-nav.js" defer></script>
+    <script src="how-they-are-used-graph.js" defer></script>
+    <style>
+        :root {
+            --bg: rgb(218, 210, 199);
+            --frame-pad: 8px;
+            --frame-left-column: 250px;
+            --frame-right-column: 230px;
+            --frame-top-row: 58px;
+            --frame-bottom-row: 56px;
+            --stage-ratio: 1.52;
+            --stage-safety: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        body {
+            background: var(--bg);
+            color: #232323;
+            font-family: "oxanium", sans-serif;
+        }
+
+        header {
+            position: absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 40px;
+            box-sizing: border-box;
+            z-index: 120;
+            pointer-events: none;
+        }
+
+        .logo {
+            font-size: 36px;
+            color: black;
+            text-decoration: none;
+            pointer-events: auto;
+        }
+
+        nav {
+            display: flex;
+            gap: 40px;
+            pointer-events: auto;
+        }
+
+        nav a {
+            font-size: 24px;
+            color: black;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        nav a:hover {
+            opacity: 0.5;
+        }
+
+        .active {
+            border-bottom: 2px solid black;
+        }
+
+        .page {
+            min-height: 100vh;
+            padding:
+                calc(var(--frame-pad) + var(--frame-top-row) + var(--stage-safety))
+                calc(var(--frame-pad) + var(--frame-right-column) + var(--stage-safety))
+                calc(var(--frame-pad) + var(--frame-bottom-row) + var(--stage-safety))
+                calc(var(--frame-pad) + var(--frame-left-column) + var(--stage-safety));
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .stage-wrap {
+            position: relative;
+            width: min(
+                calc(100vw - (var(--frame-left-column) + var(--frame-right-column) + (var(--frame-pad) * 2) + (var(--stage-safety) * 2))),
+                calc((100vh - (var(--frame-top-row) + var(--frame-bottom-row) + (var(--frame-pad) * 2) + (var(--stage-safety) * 2))) * var(--stage-ratio))
+            );
+            height: min(
+                calc(100vh - (var(--frame-top-row) + var(--frame-bottom-row) + (var(--frame-pad) * 2) + (var(--stage-safety) * 2))),
+                calc((100vw - (var(--frame-left-column) + var(--frame-right-column) + (var(--frame-pad) * 2) + (var(--stage-safety) * 2))) / var(--stage-ratio))
+            );
+            min-height: 620px;
+            overflow: hidden;
+        }
+
+        #usage-graph-canvas {
+            position: absolute;
+            inset: 0;
+        }
+
+        #usage-graph-canvas canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        @media (max-width: 1180px) {
+            :root {
+                --frame-left-column: 120px;
+                --frame-right-column: 110px;
+                --frame-bottom-row: 72px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            :root {
+                --frame-pad: 0px;
+                --frame-left-column: 0px;
+                --frame-right-column: 0px;
+                --frame-top-row: 66px;
+                --frame-bottom-row: 0px;
+                --stage-safety: 8px;
+            }
+
+            .page {
+                padding: calc(var(--frame-top-row) + var(--stage-safety)) 8px 96px;
+            }
+
+            .stage-wrap {
+                width: 100%;
+                height: min(74vh, 760px);
+                min-height: 520px;
+            }
+        }
+    </style>
+</head>
+<body data-panel-page="">
+    <header>
+        <a href="index.html" class="logo">Error of Information</a>
+        <nav>
+            <a href="project1.html">Project 1</a>
+            <a href="project2.html" class="active">Project 2</a>
+        </nav>
+    </header>
+
+    <main class="page">
+        <section class="stage-wrap" aria-label="Project 2 landing graph">
+            <div id="usage-graph-canvas"></div>
+        </section>
+    </main>
+</body>
+</html>

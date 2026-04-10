@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canada Waste Report 2022</title>
+    <link rel="stylesheet" href="https://use.typekit.net/ufh5wxj.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="panel-nav.css">
+    <script src="panel-nav.js" defer></script>
+    <style>
+        :root {
+            --bg: rgb(218, 210, 199);
+            --ink: #1f1f1f;
+            --muted: #55514b;
+            --blue: #0e4a78;
+            --red: #ba1f1a;
+            --teal: #0f7a80;
+            --bar: #707070;
+            --paper: rgba(255, 255, 255, 0.18);
+            --frame-pad: 8px;
+            --frame-left-column: 250px;
+            --frame-right-column: 230px;
+            --frame-top-row: 58px;
+            --frame-bottom-row: 56px;
+            --board-ratio: 1.3333333333;
+            --board-safety: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            font-family: "oxanium", sans-serif;
+        }
+
+        header {
+            position: absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 40px;
+            box-sizing: border-box;
+            z-index: 120;
+            pointer-events: none;
+        }
+
+        .logo {
+            font-size: 36px;
+            color: black;
+            text-decoration: none;
+            pointer-events: auto;
+        }
+
+        nav {
+            display: flex;
+            gap: 40px;
+            pointer-events: auto;
+        }
+
+        nav a {
+            font-size: 24px;
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        nav a:hover {
+            opacity: 0.5;
+        }
+
+        .active {
+            border-bottom: 2px solid black;
+        }
+
+        .page {
+            width: 100vw;
+            min-height: 100vh;
+            margin: 0 auto;
+            padding:
+                calc(var(--frame-pad) + var(--frame-top-row) + var(--board-safety))
+                calc(var(--frame-pad) + var(--frame-right-column) + var(--board-safety))
+                calc(var(--frame-pad) + var(--frame-bottom-row) + var(--board-safety))
+                calc(var(--frame-pad) + var(--frame-left-column) + var(--board-safety));
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow: visible;
+            position: relative;
+            z-index: 70;
+        }
+
+        .board {
+            width: min(
+                calc(100vw - (var(--frame-left-column) + var(--frame-right-column) + (var(--frame-pad) * 2) + (var(--board-safety) * 2))),
+                calc((100vh - (var(--frame-top-row) + var(--frame-bottom-row) + (var(--frame-pad) * 2) + (var(--board-safety) * 2))) * var(--board-ratio))
+            );
+            max-width: 1800px;
+            max-height: calc(100vh - (var(--frame-top-row) + var(--frame-bottom-row) + (var(--frame-pad) * 2) + (var(--board-safety) * 2)));
+            height: auto;
+            display: block;
+            overflow: visible;
+        }
+
+        @media (max-width: 1100px) {
+            :root {
+                --frame-left-column: 120px;
+                --frame-right-column: 110px;
+                --frame-top-row: 56px;
+                --frame-bottom-row: 72px;
+            }
+        }
+
+        @media (max-width: 820px) {
+            :root {
+                --frame-pad: 0px;
+                --frame-left-column: 0px;
+                --frame-right-column: 0px;
+                --frame-top-row: 66px;
+                --frame-bottom-row: 0px;
+                --board-safety: 8px;
+            }
+
+            .page {
+                padding: calc(var(--frame-top-row) + var(--frame-pad)) 8px 18px;
+            }
+
+            .board {
+                width: min(96vw, calc((100vh - var(--frame-top-row) - 30px) * var(--board-ratio)));
+                max-height: calc(100vh - var(--frame-top-row) - 24px);
+            }
+        }
+
+        .title {
+            font-size: 34px;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+        }
+
+        .copy {
+            font-size: 13px;
+            line-height: 1.45;
+            fill: var(--muted);
+        }
+
+        .copy-total {
+            font-size: 11.5px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 500;
+        }
+
+        .legend {
+            font-size: 11px;
+            fill: var(--muted);
+            letter-spacing: 0.03em;
+        }
+
+        .province-name {
+            font-weight: 500;
+            fill: var(--ink);
+        }
+
+        .province-value {
+            fill: #3d3a36;
+        }
+
+        .small-name {
+            font-weight: 500;
+            fill: var(--ink);
+        }
+
+        .small-value {
+            fill: #3d3a36;
+        }
+
+        .bar-label {
+            font-size: 17px;
+            font-weight: 300;
+            fill: #3d3a36;
+            letter-spacing: 0.008em;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+
+        .bar-value {
+            font-size: 9px;
+            font-weight: 300;
+            fill: #3d3a36;
+            text-anchor: middle;
+            dominant-baseline: hanging;
+            opacity: 0;
+            transform: translateY(8px);
+            transform-box: fill-box;
+            transform-origin: center;
+            transition: opacity 0.22s ease, transform 0.22s ease;
+            pointer-events: none;
+        }
+
+        .bar-value-small {
+            font-size: 9px;
+        }
+
+        .bar-label-small {
+            font-size: 15px;
+        }
+
+        .bar-caption {
+            font-size: 13px;
+            font-weight: 300;
+            fill: #5e5954;
+            text-anchor: middle;
+        }
+
+        .bar-group {
+            cursor: pointer;
+        }
+
+        .bar-group:hover .bar-value,
+        .bar-group:focus-visible .bar-value {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .footer-note {
+            font-size: 6.5px;
+            fill: #5e5954;
+        }
+
+        .bubble {
+            transform-origin: center;
+            animation: bubbleIn 0.9s ease both;
+        }
+
+        .bubble circle,
+        .bubble path {
+            shape-rendering: geometricPrecision;
+        }
+
+        .bubble text {
+            pointer-events: none;
+        }
+
+        .bubble-hit-area {
+            fill: none;
+            stroke: transparent;
+            pointer-events: stroke;
+            cursor: pointer;
+        }
+
+        .bubble text.bubble-name-text {
+            pointer-events: all;
+            cursor: pointer;
+        }
+
+        .ring-outline,
+        .ring-red,
+        .ring-teal {
+            transition: stroke-width 0.18s ease, filter 0.18s ease, opacity 0.18s ease;
+        }
+
+        .ring-outline.is-ring-hovered,
+        .ring-red.is-ring-hovered,
+        .ring-teal.is-ring-hovered {
+            filter: brightness(1.14);
+        }
+
+        .bubble-tooltip {
+            position: fixed;
+            z-index: 999;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 0.16s ease, transform 0.16s ease;
+            padding: 8px 10px;
+            border-radius: 10px;
+            background: rgba(20, 20, 20, 0.92);
+            color: #f7f1e5;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+            white-space: nowrap;
+        }
+
+        .bubble-tooltip.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .bubble-tooltip__label {
+            font-size: 11px;
+            line-height: 1.2;
+            opacity: 0.8;
+            margin-bottom: 2px;
+        }
+
+        .bubble-tooltip__value {
+            font-size: 13px;
+            line-height: 1.2;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .bubble-tooltip__meta {
+            font-size: 11px;
+            line-height: 1.25;
+            margin-top: 4px;
+            opacity: 0.9;
+        }
+
+        .fade-up {
+            opacity: 0;
+            animation: fadeUp 0.8s ease forwards;
+        }
+
+        @keyframes bubbleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.92);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body data-panel-page="canada-waste-report">
+    <header>
+        <a href="index.html" class="logo">Error of Information</a>
+        <nav>
+            <a href="project1.html">Project 1</a>
+            <a href="project2.html" class="active">Project 2</a>
+        </nav>
+    </header>
+    <main class="page">
+        <svg class="board" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" aria-label="Canada Waste Report 2022 dashboard">
+
+            <g id="canada-waste-report" class="fade-up" style="animation-delay: 0.05s;">
+                <text x="58" y="66" class="title">Canada Waste Report: 2022</text>
+                <text x="58" y="118" class="copy">This data is derived by combining Statistics Canada's 2022 data from "Archived -</text>
+                <text x="58" y="138" class="copy">Waste materials diverted, by type and by source, inactive" and "Disposal of waste,</text>
+                <text x="58" y="158" class="copy">by source". The waste generation, waste incineration, and recycling volumes for</text>
+                <text x="58" y="178" class="copy">each province within Canada were calculated and converted into percentages.</text>
+
+                <rect x="58" y="214" width="10" height="10" fill="var(--blue)" />
+                <text x="76" y="223" class="legend">TOTAL WASTE</text>
+                <rect x="236" y="214" width="10" height="10" fill="var(--red)" />
+                <text x="254" y="223" class="legend">DISPOSAL RATIO</text>
+                <rect x="414" y="214" width="10" height="10" fill="var(--teal)" />
+                <text x="432" y="223" class="legend">RECYCLING RATIO</text>
+            </g>
+
+            <g id="true-recycling" class="fade-up" style="animation-delay: 0.14s;">
+                <text x="690" y="66" class="section-title">Canada Total</text>
+                <text x="690" y="100" class="copy copy-total">According to Statistics Canada, total</text>
+                <text x="690" y="114" class="copy copy-total">waste generated in Canada in</text>
+                <text x="690" y="128" class="copy copy-total">2022 amounted to 35.31 million</text>
+                <text x="690" y="142" class="copy copy-total">tons, of which only 9.88 million</text>
+                <text x="690" y="156" class="copy copy-total">tons were recycled. This means</text>
+                <text x="690" y="170" class="copy copy-total">27.1% was recycled, while the</text>
+                <text x="690" y="184" class="copy copy-total">remaining 69.9% was incinerated.</text>
+
+                <image href="image/canada_map.png" x="880" y="40" width="178" height="160" preserveAspectRatio="xMidYMid meet" />
+
+            </g>
+
+            <g id="bubble-layer"></g>
+
+            <g class="fade-up" style="animation-delay: 0.2s;">
+                <g id="population-comparison" transform="translate(42 648)">
+                    <g class="bar-group" tabindex="0">
+                        <path d="M 5 180 V 3 Q 5 0 8 0 H 26 Q 29 0 29 3 V 180 Z" fill="var(--bar)" />
+                        <text x="17" y="-12" class="bar-value">15.3 M</text>
+                        <text x="17" y="200" class="bar-label">ON</text>
+                    </g>
+
+                    <g class="bar-group" tabindex="0">
+                        <path d="M 57 180 V 69 Q 57 66 60 66 H 78 Q 81 66 81 69 V 180 Z" fill="var(--bar)" />
+                        <text x="69" y="54" class="bar-value">8.8 M</text>
+                        <text x="69" y="200" class="bar-label">QC</text>
+                    </g>
+
+                    <g class="bar-group" tabindex="0">
+                        <path d="M 109 180 V 105 Q 109 102 112 102 H 130 Q 133 102 133 105 V 180 Z" fill="var(--bar)" />
+                        <text x="121" y="90" class="bar-value">5.4 M</text>
+                        <text x="121" y="200" class="bar-label">BC</text>
+                    </g>
+
+                    <g class="bar-group" tabindex="0">
+                        <path d="M 161 180 V 114 Q 161 111 164 111 H 182 Q 185 111 185 114 V 180 Z" fill="var(--bar)" />
+                        <text x="173" y="99" class="bar-value">4.6 M</text>
+                        <text x="173" y="200" class="bar-label">AB</text>
+                    </g>
+
+                    <g class="bar-group" tabindex="0">
+                        <path d="M 210 180 V 162 Q 210 160 212 160 H 232 Q 234 160 234 162 V 180 Z" fill="var(--bar)" />
+                        <text x="222" y="148" class="bar-value bar-value-small">1.4 M</text>
+                        <text x="222" y="200" class="bar-label bar-label-small">MB</text>
+                    </g>
+
+                    <g class="bar-group" tabindex="0">
+                        <path d="M 252 180 V 166 Q 252 164 254 164 H 274 Q 276 164 276 166 V 180 Z" fill="var(--bar)" />
+                        <text x="264" y="152" class="bar-value bar-value-small">1.2 M</text>
+                        <text x="264" y="200" class="bar-label bar-label-small">SK</text>
+                    </g>
+
+                    <g class="bar-group" tabindex="0">
+                        <path d="M 296 180 V 170 Q 296 168 298 168 H 318 Q 320 168 320 170 V 180 Z" fill="var(--bar)" />
+                        <text x="308" y="156" class="bar-value bar-value-small">1.0 M</text>
+                        <text x="308" y="200" class="bar-label bar-label-small">NS</text>
+                    </g>
+
+                    <g class="bar-group" tabindex="0">
+                        <path d="M 340 180 V 174 Q 340 172 342 172 H 362 Q 364 172 364 174 V 180 Z" fill="var(--bar)" />
+                        <text x="352" y="160" class="bar-value bar-value-small">0.8 M</text>
+                        <text x="352" y="200" class="bar-label bar-label-small">NB</text>
+                    </g>
+
+                    <g class="bar-group" tabindex="0">
+                        <path d="M 381 180 V 177 Q 381 175 383 175 H 403 Q 405 175 405 177 V 180 Z" fill="var(--bar)" />
+                        <text x="393" y="163" class="bar-value bar-value-small">0.53 M</text>
+                        <text x="393" y="200" class="bar-label bar-label-small">NL</text>
+                    </g>
+
+                    <g class="bar-group" tabindex="0">
+                        <path d="M 419 180 V 176 Q 419 174 421 174 H 441 Q 443 174 443 176 V 180 Z" fill="var(--bar)" />
+                        <text x="431" y="162" class="bar-value bar-value-small">0.8 M</text>
+                        <text x="431" y="200" class="bar-label bar-label-small">-</text>
+                    </g>
+
+                    <text x="221" y="222" class="bar-caption">Population by Province (2022)</text>
+                </g>
+
+                <g transform="translate(618 858)">
+                    <text x="0" y="-12" class="footer-note">Statistics Canada, "Table 38-10-0130-01: Materials diverted from the waste stream, by type of material" last modified September 23, 2024.</text>
+                    <text x="0" y="0" class="footer-note">Statistics Canada, "Table 38-10-0138-01: Waste management industry, survey of business and government sectors" last modified September 23, 2024.</text>
+                    <text x="0" y="12" class="footer-note">Statistics Canada, "Table 17-10-0005-01: Population estimates on July 1, by age and sex" last modified December 31, 2022.</text>
+                </g>
+            </g>
+        </svg>
+    </main>
+    <div id="bubble-tooltip" class="bubble-tooltip" aria-hidden="true"></div>
+
+    <script>
+        // Tuned by eye against the provided reference PNG.
+        const provinces = [
+            { name: "British Columbia", tooltipLabel: "British Columbia", value: "4.6 M t (11.8%)", cx: 112, cy: 344, r: 96, disposalRate: 72, recyclingRate: 28, delay: 0.18, nameSize: 18, valueSize: 12.2, nameYOffset: -10.2, nameToValueGap: 22.8 },
+            { name: "Alberta", tooltipLabel: "Alberta", value: "4.9 M t (11.5%)", cx: 334, cy: 396, r: 96, disposalRate: 81, recyclingRate: 19, delay: 0.24, nameSize: 16, valueSize: 9.2, nameYOffset: -9.8, nameToValueGap: 17.4 },
+            { name: "Manitoba", tooltipLabel: "Manitoba", value: "1.1 M t (3.0%)", cx: 510, cy: 424, r: 45, disposalRate: 83, recyclingRate: 17, delay: 0.28, nameSize: 12, valueSize: 7.8, nameYOffset: -4.2, nameToValueGap: 12.2 },
+            { name: "Saskatchewan", tooltipLabel: "Saskatchewan", value: "1.0 M t (2.7%)", cx: 454, cy: 535, r: 43, disposalRate: 87, recyclingRate: 13, delay: 0.31, nameSize: 10, valueSize: 7.8, nameYOffset: -3.4, nameToValueGap: 12.2 },
+            { name: "Others", tooltipLabel: "Others", value: "NPE, YT, NT, NU\n0.75 M t (2%)", cx: 675, cy: 342, r: 42, disposalRate: null, recyclingRate: null, delay: 0.27, nameSize: 7.6, valueSize: 5.9, nameYOffset: -7.4, valueYOffset: 2.0, valueLineGap: 5.5 },
+            { name: "Ontario", tooltipLabel: "Ontario", value: "14.2 M t (38.9%)", cx: 700, cy: 614, r: 160, disposalRate: 75, recyclingRate: 25, delay: 0.34, nameSize: 22, valueSize: 16, nameYOffset: -4 },
+            { name: "Quebec", tooltipLabel: "Quebec", value: "8.6 M t (22.5%)", cx: 968, cy: 354, r: 128, disposalRate: 62, recyclingRate: 38, delay: 0.4, nameSize: 20, valueSize: 12.6, nameYOffset: -6.0, nameToValueGap: 24.8 },
+            { name: "New\nBrunswick", tooltipLabel: "New Brunswick", value: "0.37 M t (1.0%)", cx: 974, cy: 595, r: 38, disposalRate: 82, recyclingRate: 18, delay: 0.45, nameSize: 8, valueSize: 5.0, nameYOffset: -7.2, nameLineGap: 6, nameToValueGap: 9 },
+            { name: "Nova Scotia", tooltipLabel: "Nova Scotia", value: "0.72 M t (1.1%)", cx: 1100, cy: 610, r: 38, disposalRate: 66, recyclingRate: 34, delay: 0.48, nameSize: 9, valueSize: 6.0, nameYOffset: -4.0, nameToValueGap: 10.8 },
+            { name: "Newfoundland", tooltipLabel: "Newfoundland and Labrador", value: "0.4 M t (1.1%)", cx: 1110, cy: 194, r: 30, disposalRate: 86, recyclingRate: 14, delay: 0.42, nameSize: 4.5, valueSize: 3.5, nameYOffset: -2.6, nameToValueGap: 5.8 }
+        ];
+
+        const svg = document.getElementById("bubble-layer");
+        const tooltip = document.getElementById("bubble-tooltip");
+
+        function setTooltip(content, event) {
+            tooltip.innerHTML = content;
+            tooltip.classList.add("is-visible");
+            tooltip.setAttribute("aria-hidden", "false");
+            moveTooltip(event);
+        }
+
+        function showProvinceTooltip(item, event) {
+            const hasRateData = Number.isFinite(item.recyclingRate) && Number.isFinite(item.disposalRate);
+            setTooltip(`
+                <div class="bubble-tooltip__label">${(item.tooltipLabel ?? item.name).replace(/\n/g, " ")}</div>
+                <div class="bubble-tooltip__value">Total Waste: ${item.value.replace(/\n/g, " ")}</div>
+                ${hasRateData ? `<div class="bubble-tooltip__meta">Disposal Rate: ${item.disposalRate}%<br>Recycling Rate: ${item.recyclingRate}%</div>` : ""}
+            `, event);
+        }
+
+        function showMetricTooltip(item, metric, event) {
+            const label = (item.tooltipLabel ?? item.name).replace(/\n/g, " ");
+
+            if (metric === "total") {
+                setTooltip(`
+                    <div class="bubble-tooltip__label">${label}</div>
+                    <div class="bubble-tooltip__value">Total Waste: ${item.value.replace(/\n/g, " ")}</div>
+                `, event);
+                return;
+            }
+
+            if (metric === "disposal" && Number.isFinite(item.disposalRate)) {
+                setTooltip(`
+                    <div class="bubble-tooltip__label">${label}</div>
+                    <div class="bubble-tooltip__value">Disposal Rate: ${item.disposalRate}%</div>
+                `, event);
+                return;
+            }
+
+            if (metric === "recycling" && Number.isFinite(item.recyclingRate)) {
+                setTooltip(`
+                    <div class="bubble-tooltip__label">${label}</div>
+                    <div class="bubble-tooltip__value">Recycling Rate: ${item.recyclingRate}%</div>
+                `, event);
+            }
+        }
+
+        function moveTooltip(event) {
+            if (!tooltip.classList.contains("is-visible")) return;
+
+            const offset = 16;
+            const tooltipRect = tooltip.getBoundingClientRect();
+            let left = event.clientX + offset;
+            let top = event.clientY + offset;
+
+            if (left + tooltipRect.width > window.innerWidth - 12) {
+                left = event.clientX - tooltipRect.width - offset;
+            }
+
+            if (top + tooltipRect.height > window.innerHeight - 12) {
+                top = event.clientY - tooltipRect.height - offset;
+            }
+
+            tooltip.style.left = `${Math.max(12, left)}px`;
+            tooltip.style.top = `${Math.max(12, top)}px`;
+        }
+
+        function hideTooltip() {
+            tooltip.classList.remove("is-visible");
+            tooltip.setAttribute("aria-hidden", "true");
+        }
+
+        function setRingHover(ring, isActive) {
+            if (!ring) return;
+            const baseStrokeWidth = Number(ring.dataset.baseStrokeWidth || 0);
+            ring.classList.toggle("is-ring-hovered", isActive);
+            if (baseStrokeWidth > 0) {
+                ring.style.strokeWidth = `${isActive ? baseStrokeWidth * 1.22 : baseStrokeWidth}`;
+            }
+        }
+
+        function polarToCartesian(cx, cy, radius, angleDeg) {
+            const angle = (angleDeg - 90) * Math.PI / 180;
+            return {
+                x: cx + radius * Math.cos(angle),
+                y: cy + radius * Math.sin(angle)
+            };
+        }
+
+        function arcPath(cx, cy, radius, startAngle, endAngle) {
+            const start = polarToCartesian(cx, cy, radius, endAngle);
+            const end = polarToCartesian(cx, cy, radius, startAngle);
+            const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+            return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`;
+        }
+
+        const RING_START_ANGLE = 0;
+
+        function addBubble(item) {
+            const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            group.setAttribute("class", "bubble");
+            group.style.animationDelay = `${item.delay}s`;
+
+            const disposalRatio = Number.isFinite(item.disposalRate) ? item.disposalRate / 100 : 0;
+            const recycleRatio = Number.isFinite(item.recyclingRate) ? item.recyclingRate / 100 : 0;
+
+            const outlineWidth = Math.max(2.9, item.r * 0.064);
+            const redWidth = Math.max(2.4, item.r * 0.052);
+            const tealWidth = Math.max(2.1, item.r * 0.044);
+            const outlineRadius = item.r;
+            const redRadius = outlineRadius - (outlineWidth + redWidth) / 2;
+            const tealRadius = redRadius - (redWidth + tealWidth) / 2;
+
+            const outline = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            outline.setAttribute("class", "ring-outline");
+            outline.setAttribute("cx", item.cx);
+            outline.setAttribute("cy", item.cy);
+            outline.setAttribute("r", outlineRadius);
+            outline.setAttribute("fill", "none");
+            outline.setAttribute("stroke", "var(--blue)");
+            outline.setAttribute("stroke-width", outlineWidth);
+            outline.setAttribute("stroke-linecap", "round");
+            outline.dataset.baseStrokeWidth = outlineWidth;
+            group.appendChild(outline);
+
+            const outlineHitArea = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            outlineHitArea.setAttribute("class", "bubble-hit-area");
+            outlineHitArea.setAttribute("cx", item.cx);
+            outlineHitArea.setAttribute("cy", item.cy);
+            outlineHitArea.setAttribute("r", outlineRadius);
+            outlineHitArea.setAttribute("stroke-width", Math.max(outlineWidth * 2.2, 14));
+            outlineHitArea.addEventListener("pointerenter", event => {
+                setRingHover(outline, true);
+                showMetricTooltip(item, "total", event);
+            });
+            outlineHitArea.addEventListener("pointermove", moveTooltip);
+            outlineHitArea.addEventListener("pointerleave", () => {
+                setRingHover(outline, false);
+                hideTooltip();
+            });
+            group.appendChild(outlineHitArea);
+
+            if (disposalRatio > 0) {
+                const redArc = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                redArc.setAttribute("class", "ring-red");
+                const redArcPath = arcPath(
+                    item.cx,
+                    item.cy,
+                    redRadius,
+                    RING_START_ANGLE,
+                    RING_START_ANGLE + 360 * disposalRatio
+                );
+                redArc.setAttribute("d", redArcPath);
+                redArc.setAttribute("fill", "none");
+                redArc.setAttribute("stroke", "var(--red)");
+                redArc.setAttribute("stroke-width", redWidth);
+                redArc.setAttribute("stroke-linecap", "round");
+                redArc.dataset.baseStrokeWidth = redWidth;
+                group.appendChild(redArc);
+
+                const redHitArea = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                redHitArea.setAttribute("class", "bubble-hit-area");
+                redHitArea.setAttribute("d", redArcPath);
+                redHitArea.setAttribute("stroke-width", Math.max(redWidth * 2.8, 12));
+                redHitArea.addEventListener("pointerenter", event => {
+                    setRingHover(redArc, true);
+                    showMetricTooltip(item, "disposal", event);
+                });
+                redHitArea.addEventListener("pointermove", moveTooltip);
+                redHitArea.addEventListener("pointerleave", () => {
+                    setRingHover(redArc, false);
+                    hideTooltip();
+                });
+                group.appendChild(redHitArea);
+            }
+
+            if (recycleRatio > 0) {
+                const tealArc = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                tealArc.setAttribute("class", "ring-teal");
+                const tealArcPath = arcPath(
+                    item.cx,
+                    item.cy,
+                    tealRadius,
+                    RING_START_ANGLE,
+                    RING_START_ANGLE + 360 * recycleRatio
+                );
+                tealArc.setAttribute("d", tealArcPath);
+                tealArc.setAttribute("fill", "none");
+                tealArc.setAttribute("stroke", "var(--teal)");
+                tealArc.setAttribute("stroke-width", tealWidth);
+                tealArc.setAttribute("stroke-linecap", "round");
+                tealArc.dataset.baseStrokeWidth = tealWidth;
+                group.appendChild(tealArc);
+
+                const tealHitArea = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                tealHitArea.setAttribute("class", "bubble-hit-area");
+                tealHitArea.setAttribute("d", tealArcPath);
+                tealHitArea.setAttribute("stroke-width", Math.max(tealWidth * 3.1, 11));
+                tealHitArea.addEventListener("pointerenter", event => {
+                    setRingHover(tealArc, true);
+                    showMetricTooltip(item, "recycling", event);
+                });
+                tealHitArea.addEventListener("pointermove", moveTooltip);
+                tealHitArea.addEventListener("pointerleave", () => {
+                    setRingHover(tealArc, false);
+                    hideTooltip();
+                });
+                group.appendChild(tealHitArea);
+            }
+
+            const nameSize = item.nameSize ?? (item.r < 52 ? 13 : 22);
+            const valueSize = item.valueSize ?? (item.r < 52 ? 11 : 16);
+            const defaultNameYOffset = -2;
+            const defaultValueYOffset = item.r < 52 ? 16 : 26;
+            const valueLineGap = item.valueLineGap ?? Math.max(valueSize * 0.95, 7);
+            const nameLineGap = item.nameLineGap ?? Math.max(nameSize * 0.9, 4.6);
+            const nameLines = item.name.split("\n");
+            const nameCenterY = item.cy + (item.nameYOffset ?? defaultNameYOffset);
+            const firstNameY = nameCenterY - ((nameLines.length - 1) * nameLineGap) / 2;
+            const lastNameY = firstNameY + (nameLines.length - 1) * nameLineGap;
+            const nameToValueGap = item.nameToValueGap ?? Math.max(nameSize * 1.12, 7);
+            const valueStartY = item.valueYOffset != null ? item.cy + item.valueYOffset : lastNameY + nameToValueGap;
+
+            nameLines.forEach((line, index) => {
+                const name = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                name.setAttribute("x", item.cx);
+                name.setAttribute("y", firstNameY + index * nameLineGap);
+                name.setAttribute("text-anchor", "middle");
+                name.setAttribute("dominant-baseline", "middle");
+                name.setAttribute("class", `${item.r < 52 ? "small-name" : "province-name"} bubble-name-text`);
+                name.setAttribute("font-size", nameSize);
+                name.addEventListener("pointerenter", event => showProvinceTooltip(item, event));
+                name.addEventListener("pointermove", moveTooltip);
+                name.addEventListener("pointerleave", hideTooltip);
+                name.textContent = line;
+                group.appendChild(name);
+            });
+
+            const lines = item.value.split("\n");
+            lines.forEach((line, index) => {
+                const value = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                value.setAttribute("x", item.cx);
+                value.setAttribute("y", item.valueYOffset != null ? item.cy + item.valueYOffset + index * valueLineGap : valueStartY + index * valueLineGap);
+                value.setAttribute("text-anchor", "middle");
+                value.setAttribute("class", item.r < 52 ? "small-value" : "province-value");
+                value.setAttribute("font-size", valueSize);
+                value.textContent = line;
+                group.appendChild(value);
+            });
+
+            svg.appendChild(group);
+        }
+
+        provinces.forEach(addBubble);
+    </script>
+</body>
+</html>

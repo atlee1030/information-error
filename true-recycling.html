@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>True Recycling</title>
+    <link rel="stylesheet" href="https://use.typekit.net/ufh5wxj.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="panel-nav.css">
+    <script src="panel-nav.js" defer></script>
+    <style>
+        :root {
+            --bg: rgb(218, 210, 199);
+            --ink: #1f1f1f;
+            --muted: #4f4b47;
+            --frame-pad: 8px;
+            --frame-left-column: 250px;
+            --frame-right-column: 230px;
+            --frame-top-row: 58px;
+            --frame-bottom-row: 56px;
+            --stage-ratio: 1.5625;
+            --stage-safety: 12px;
+            --recycling: #045965;
+            --disposal: #781010;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            font-family: "oxanium", sans-serif;
+        }
+
+        header {
+            position: absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 40px;
+            box-sizing: border-box;
+            z-index: 120;
+            pointer-events: none;
+        }
+
+        .logo {
+            font-size: 36px;
+            color: black;
+            text-decoration: none;
+            pointer-events: auto;
+        }
+
+        nav {
+            display: flex;
+            gap: 40px;
+            pointer-events: auto;
+        }
+
+        nav a {
+            font-size: 24px;
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        nav a:hover {
+            opacity: 0.5;
+        }
+
+        .active {
+            border-bottom: 2px solid black;
+        }
+
+        .page {
+            min-height: 100vh;
+            padding:
+                calc(var(--frame-pad) + var(--frame-top-row) + var(--stage-safety))
+                calc(var(--frame-pad) + var(--frame-right-column) + var(--stage-safety))
+                calc(var(--frame-pad) + var(--frame-bottom-row) + var(--stage-safety))
+                calc(var(--frame-pad) + var(--frame-left-column) + var(--stage-safety));
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            position: relative;
+        }
+
+        .stage-wrap {
+            width: min(
+                calc(100vw - (var(--frame-left-column) + var(--frame-right-column) + (var(--frame-pad) * 2) + (var(--stage-safety) * 2))),
+                calc((100vh - (var(--frame-top-row) + var(--frame-bottom-row) + (var(--frame-pad) * 2) + (var(--stage-safety) * 2))) * var(--stage-ratio))
+            );
+            max-height: calc(100vh - (var(--frame-top-row) + var(--frame-bottom-row) + (var(--frame-pad) * 2) + (var(--stage-safety) * 2)));
+            overflow: visible;
+        }
+
+        .viz {
+            width: 100%;
+            height: auto;
+            display: block;
+            overflow: visible;
+        }
+
+        .flow-link,
+        .material-node,
+        .material-anchor,
+        .sink-node {
+            transition: opacity 0.2s ease, filter 0.2s ease;
+        }
+
+        .flow-hit {
+            fill: none;
+            stroke: transparent;
+            cursor: pointer;
+            pointer-events: stroke;
+        }
+
+        .material-hit {
+            fill: transparent;
+            cursor: pointer;
+        }
+
+        .flow-tooltip {
+            position: fixed;
+            z-index: 999;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 0.16s ease, transform 0.16s ease;
+            padding: 8px 10px;
+            border-radius: 10px;
+            background: rgba(16, 16, 16, 0.92);
+            color: #f5efe3;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            white-space: nowrap;
+            font-size: 11px;
+            line-height: 1.35;
+        }
+
+        .flow-tooltip.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 1180px) {
+            :root {
+                --frame-left-column: 120px;
+                --frame-right-column: 110px;
+                --frame-bottom-row: 72px;
+            }
+        }
+
+        @media (max-width: 880px) {
+            :root {
+                --frame-pad: 0px;
+                --frame-left-column: 0px;
+                --frame-right-column: 0px;
+                --frame-top-row: 66px;
+                --frame-bottom-row: 0px;
+                --stage-safety: 8px;
+            }
+
+            .page {
+                padding: calc(var(--frame-top-row) + var(--stage-safety)) 8px 96px;
+            }
+        }
+    </style>
+</head>
+<body data-panel-page="true-recycling">
+    <header>
+        <a href="index.html" class="logo">Error of Information</a>
+        <nav>
+            <a href="project1.html">Project 1</a>
+            <a href="project2.html" class="active">Project 2</a>
+        </nav>
+    </header>
+
+    <main class="page">
+        <section class="stage-wrap">
+            <svg id="true-recycling-viz" class="viz" viewBox="0 0 1500 960" aria-label="True Recycling flow comparison"></svg>
+        </section>
+    </main>
+    <div id="flow-tooltip" class="flow-tooltip" aria-hidden="true"></div>
+
+    <script>
+        const svg = document.getElementById("true-recycling-viz");
+        const tooltip = document.getElementById("flow-tooltip");
+
+        const materials = [
+            { id: "metal", name: "Metal", color: "#0d6f7f", amount: 3, recyclingRate: 55.4, disposalRate: 44.6 },
+            { id: "glass", name: "Glass", color: "#3ca0a4", amount: 2, recyclingRate: 62.5, disposalRate: 37.5 },
+            { id: "paper", name: "Paper", color: "#7fc0ca", amount: 16, recyclingRate: 70.2, disposalRate: 29.8 },
+            { id: "organic", name: "Organic", color: "#e77462", amount: 14, recyclingRate: 44.9, disposalRate: 55.1 },
+            { id: "plastic", name: "Plastic", color: "#dc1a1f", amount: 12, recyclingRate: 9.1, disposalRate: 90.9 },
+            { id: "mixed", name: "Mixed Waste", color: "#e01b22", amount: 36, recyclingRate: 1.6, disposalRate: 98.4 }
+        ];
+
+        const SCALE = 6;
+        const SOURCE_X = 220;
+        const SOURCE_BAR_WIDTH = 30;
+        const FLOW_START_X = SOURCE_X + SOURCE_BAR_WIDTH;
+        const SINK_X = 1220;
+        const SINK_BAR_WIDTH = 30;
+        const TARGET_TEXT_X = SINK_X + 64;
+        const GRAPH_SHIFT_Y = -24;
+        const ROW_CENTERS = [250, 338, 420, 536, 640, 810].map(v => v + GRAPH_SHIFT_Y);
+        const SOURCE_LABEL_X = 54;
+        const RECYCLING_HEX = "#045965";
+        const DISPOSAL_HEX = "#781010";
+        const recycleTotal = materials.reduce((sum, item) => sum + item.amount * (item.recyclingRate / 100), 0);
+        const disposalTotal = materials.reduce((sum, item) => sum + item.amount * (item.disposalRate / 100), 0);
+        const recycleHeight = recycleTotal * SCALE;
+        const disposalHeight = disposalTotal * SCALE;
+        const recycleTop = 286 + GRAPH_SHIFT_Y;
+        const disposalTop = 466 + GRAPH_SHIFT_Y;
+        const totalAmount = materials.reduce((sum, item) => sum + item.amount, 0);
+        const recyclePercent = Math.round((recycleTotal / totalAmount) * 100);
+        const disposalPercent = 100 - recyclePercent;
+
+        function el(name) {
+            return document.createElementNS("http://www.w3.org/2000/svg", name);
+        }
+
+        function addTextLines(parent, opts) {
+            const node = el("text");
+            node.setAttribute("x", opts.x);
+            node.setAttribute("y", opts.y);
+            node.setAttribute("fill", opts.fill ?? "#1f1f1f");
+            node.setAttribute("font-size", opts.size ?? 12);
+            node.setAttribute("font-weight", opts.weight ?? 400);
+            node.setAttribute("text-anchor", opts.anchor ?? "start");
+            if (opts.className) node.setAttribute("class", opts.className);
+            (opts.lines || []).forEach((line, i) => {
+                const span = el("tspan");
+                span.setAttribute("x", opts.x);
+                if (i === 0) {
+                    span.setAttribute("dy", 0);
+                } else {
+                    span.setAttribute("dy", opts.lineGap ?? 16);
+                }
+                span.textContent = line;
+                node.appendChild(span);
+            });
+            parent.appendChild(node);
+            return node;
+        }
+
+        function rgba(hex, alpha) {
+            const safe = hex.replace("#", "");
+            const full = safe.length === 3 ? safe.split("").map(c => c + c).join("") : safe;
+            const r = parseInt(full.slice(0, 2), 16);
+            const g = parseInt(full.slice(2, 4), 16);
+            const b = parseInt(full.slice(4, 6), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        function flowPath(x0, y0, x1, y1, width) {
+            const top0 = y0 - width / 2;
+            const bot0 = y0 + width / 2;
+            const top1 = y1 - width / 2;
+            const bot1 = y1 + width / 2;
+            const dx = x1 - x0;
+            const c0 = x0 + dx * 0.42;
+            const c1 = x1 - dx * 0.42;
+            return [
+                `M ${x0} ${top0}`,
+                `C ${c0} ${top0}, ${c1} ${top1}, ${x1} ${top1}`,
+                `L ${x1} ${bot1}`,
+                `C ${c1} ${bot1}, ${c0} ${bot0}, ${x0} ${bot0}`,
+                "Z"
+            ].join(" ");
+        }
+
+        function createFlowGradient(defs, id, fromColor, toColor, fromAlpha, toAlpha) {
+            const gradient = el("linearGradient");
+            gradient.setAttribute("id", id);
+            gradient.setAttribute("gradientUnits", "userSpaceOnUse");
+            gradient.setAttribute("x1", FLOW_START_X);
+            gradient.setAttribute("y1", "0");
+            gradient.setAttribute("x2", SINK_X + SINK_BAR_WIDTH);
+            gradient.setAttribute("y2", "0");
+
+            const stopStart = el("stop");
+            stopStart.setAttribute("offset", "0%");
+            stopStart.setAttribute("stop-color", fromColor);
+            stopStart.setAttribute("stop-opacity", fromAlpha);
+            gradient.appendChild(stopStart);
+
+            const stopMid = el("stop");
+            stopMid.setAttribute("offset", "62%");
+            stopMid.setAttribute("stop-color", fromColor);
+            stopMid.setAttribute("stop-opacity", fromAlpha);
+            gradient.appendChild(stopMid);
+
+            const stopEnd = el("stop");
+            stopEnd.setAttribute("offset", "100%");
+            stopEnd.setAttribute("stop-color", toColor);
+            stopEnd.setAttribute("stop-opacity", toAlpha);
+            gradient.appendChild(stopEnd);
+
+            defs.appendChild(gradient);
+            return id;
+        }
+
+        function setTooltip(html, event) {
+            tooltip.innerHTML = html;
+            tooltip.classList.add("is-visible");
+            tooltip.setAttribute("aria-hidden", "false");
+            moveTooltip(event);
+        }
+
+        function moveTooltip(event) {
+            if (!tooltip.classList.contains("is-visible")) return;
+            const offset = 16;
+            const rect = tooltip.getBoundingClientRect();
+            let left = event.clientX + offset;
+            let top = event.clientY + offset;
+            if (left + rect.width > window.innerWidth - 12) left = event.clientX - rect.width - offset;
+            if (top + rect.height > window.innerHeight - 12) top = event.clientY - rect.height - offset;
+            tooltip.style.left = `${Math.max(12, left)}px`;
+            tooltip.style.top = `${Math.max(12, top)}px`;
+        }
+
+        function hideTooltip() {
+            tooltip.classList.remove("is-visible");
+            tooltip.setAttribute("aria-hidden", "true");
+        }
+
+        function drawStaticText() {
+            addTextLines(svg, {
+                x: 54,
+                y: 74,
+                lines: ["True Recycling"],
+                size: 54,
+                weight: 600
+            });
+
+            addTextLines(svg, {
+                x: 54,
+                y: 104,
+                lines: [
+                    "Not all products we know can be recycled infinitely. Materials that do not",
+                    "degrade in quality can be recycled forever, but materials that degrade in quality",
+                    "during recycling end up being downcycled and ultimately incinerated."
+                ],
+                size: 12,
+                lineGap: 14,
+                fill: "var(--muted)"
+            });
+
+            addTextLines(svg, {
+                x: 786,
+                y: 46,
+                lines: [
+                    "Many products we use",
+                    "bear recycling marks,",
+                    "but not all materials can",
+                    "be recycled the same",
+                    "number of times. Metals",
+                    "and glass, for example,",
+                    "can be melted down",
+                    "and recycled infinitely",
+                    "into new forms without",
+                    "quality degradation."
+                ],
+                size: 11,
+                weight: 350,
+                lineGap: 12,
+                fill: "#3e3b37"
+            });
+
+            addTextLines(svg, {
+                x: 936,
+                y: 46,
+                lines: [
+                    "However, paper fibers shorten with each recycling",
+                    "cycle, limiting it to only 5-7 reuses. Moreover, it",
+                    "doesn't reappear as paper of the same quality",
+                    "each time; instead, it is reborn as lower-quality",
+                    "material with each cycle. Finally, plastic suffers",
+                    "significant quality degradation during crushing and",
+                    "heating, making it recyclable only about 1-2 times. In",
+                    "other words, while metals and glass can be called",
+                    "infinitely recyclable, paper and plastic are more",
+                    "accurately described as undergoing downcycling."
+                ],
+                size: 11,
+                weight: 350,
+                lineGap: 12,
+                fill: "#3e3b37"
+            });
+
+            addTextLines(svg, {
+                x: 786,
+                y: 930,
+                size: 8.6,
+                lineGap: 12,
+                fill: "rgba(31, 31, 31, 0.68)",
+                lines: [
+                    "Environment and Climate Change Canada, National Waste Characterization Report: The Composition of Canadian Residential Municipal Solid Waste.",
+                    "Gatineau, QC: Environment and Climate Change Canada, 2020.",
+                    "Statistics Canada, \"Table 38-10-0132-01: Materials diverted from the waste stream, by type of material,\" last modified September 23, 2024."
+                ]
+            });
+        }
+
+        const materialElements = new Map();
+        const typeElements = {
+            recycling: [],
+            disposal: []
+        };
+
+        function highlightMaterial(id) {
+            materialElements.forEach((entry, key) => {
+                const active = key === id;
+                entry.flows.forEach(node => {
+                    node.style.opacity = active ? "0.85" : "0.14";
+                    node.style.filter = active ? "brightness(1.06)" : "none";
+                });
+                entry.node.style.opacity = active ? "1" : "0.24";
+                entry.anchor.style.opacity = active ? "1" : "0.24";
+                entry.label.style.opacity = active ? "1" : "0.3";
+                entry.meta.style.opacity = active ? "0.95" : "0.25";
+            });
+        }
+
+        function highlightType(type) {
+            Object.entries(typeElements).forEach(([currentType, nodes]) => {
+                const active = currentType === type;
+                nodes.forEach(node => {
+                    node.style.opacity = active ? "0.82" : "0.2";
+                    node.style.filter = active ? "brightness(1.06)" : "none";
+                });
+            });
+            materialElements.forEach(entry => {
+                entry.node.style.opacity = "0.66";
+                entry.anchor.style.opacity = "0.66";
+                entry.label.style.opacity = "0.65";
+                entry.meta.style.opacity = "0.45";
+            });
+        }
+
+        function clearHighlight() {
+            materialElements.forEach(entry => {
+                entry.flows.forEach(node => {
+                    node.style.opacity = "";
+                    node.style.filter = "";
+                });
+                entry.node.style.opacity = "";
+                entry.anchor.style.opacity = "";
+                entry.label.style.opacity = "";
+                entry.meta.style.opacity = "";
+            });
+            Object.values(typeElements).forEach(nodes => {
+                nodes.forEach(node => {
+                    node.style.opacity = "";
+                    node.style.filter = "";
+                });
+            });
+        }
+
+        function drawFlows() {
+            const defs = el("defs");
+            svg.appendChild(defs);
+
+            const recycleNode = el("rect");
+            recycleNode.setAttribute("class", "sink-node");
+            recycleNode.setAttribute("x", SINK_X);
+            recycleNode.setAttribute("y", recycleTop);
+            recycleNode.setAttribute("width", SINK_BAR_WIDTH);
+            recycleNode.setAttribute("height", recycleHeight);
+            recycleNode.setAttribute("fill", RECYCLING_HEX);
+            svg.appendChild(recycleNode);
+
+            const disposalNode = el("rect");
+            disposalNode.setAttribute("class", "sink-node");
+            disposalNode.setAttribute("x", SINK_X);
+            disposalNode.setAttribute("y", disposalTop);
+            disposalNode.setAttribute("width", SINK_BAR_WIDTH);
+            disposalNode.setAttribute("height", disposalHeight);
+            disposalNode.setAttribute("fill", DISPOSAL_HEX);
+            svg.appendChild(disposalNode);
+
+            addTextLines(svg, {
+                x: TARGET_TEXT_X,
+                y: recycleTop + recycleHeight / 2 + 4,
+                lines: [`Recycling ${recyclePercent}%`],
+                size: 25,
+                weight: 450,
+                fill: "#33302c"
+            });
+
+            addTextLines(svg, {
+                x: TARGET_TEXT_X,
+                y: disposalTop + disposalHeight / 2 + 4,
+                lines: [`Disposal ${disposalPercent}%`],
+                size: 25,
+                weight: 450,
+                fill: "#33302c"
+            });
+
+            let recycleCursor = recycleTop;
+            let disposalCursor = disposalTop;
+
+            materials.forEach((item, index) => {
+                const rowY = ROW_CENTERS[index];
+                const totalHeight = item.amount * SCALE;
+                const recycleHeightLocal = totalHeight * (item.recyclingRate / 100);
+                const disposalHeightLocal = totalHeight - recycleHeightLocal;
+                const sourceTop = rowY - totalHeight / 2;
+                const recycleCenterSource = sourceTop + recycleHeightLocal / 2;
+                const disposalCenterSource = sourceTop + recycleHeightLocal + disposalHeightLocal / 2;
+                const recycleCenterTarget = recycleCursor + recycleHeightLocal / 2;
+                const disposalCenterTarget = disposalCursor + disposalHeightLocal / 2;
+                recycleCursor += recycleHeightLocal;
+                disposalCursor += disposalHeightLocal;
+
+                const recycleFlow = el("path");
+                recycleFlow.setAttribute("class", "flow-link");
+                recycleFlow.setAttribute(
+                    "d",
+                    flowPath(FLOW_START_X, recycleCenterSource, SINK_X, recycleCenterTarget, recycleHeightLocal)
+                );
+                const recycleGradientId = createFlowGradient(
+                    defs,
+                    `flow-grad-${item.id}-recycling`,
+                    item.color,
+                    RECYCLING_HEX,
+                    "0.44",
+                    "0.72"
+                );
+                recycleFlow.setAttribute("fill", `url(#${recycleGradientId})`);
+                svg.appendChild(recycleFlow);
+
+                const disposalFlow = el("path");
+                disposalFlow.setAttribute("class", "flow-link");
+                disposalFlow.setAttribute(
+                    "d",
+                    flowPath(FLOW_START_X, disposalCenterSource, SINK_X, disposalCenterTarget, disposalHeightLocal)
+                );
+                const disposalGradientId = createFlowGradient(
+                    defs,
+                    `flow-grad-${item.id}-disposal`,
+                    item.color,
+                    DISPOSAL_HEX,
+                    "0.5",
+                    "0.78"
+                );
+                disposalFlow.setAttribute("fill", `url(#${disposalGradientId})`);
+                svg.appendChild(disposalFlow);
+
+                typeElements.recycling.push(recycleFlow);
+                typeElements.disposal.push(disposalFlow);
+
+                const node = el("rect");
+                node.setAttribute("class", "material-node");
+                node.setAttribute("x", SOURCE_X);
+                node.setAttribute("y", sourceTop);
+                node.setAttribute("width", SOURCE_BAR_WIDTH);
+                node.setAttribute("height", totalHeight);
+                node.setAttribute("fill", rgba(item.color, 0.74));
+                svg.appendChild(node);
+
+                const anchor = el("rect");
+                anchor.setAttribute("class", "material-anchor");
+                anchor.setAttribute("x", SOURCE_X);
+                anchor.setAttribute("y", sourceTop);
+                anchor.setAttribute("width", 9);
+                anchor.setAttribute("height", totalHeight);
+                anchor.setAttribute("fill", item.color);
+                svg.appendChild(anchor);
+
+                const isMixed = item.id === "mixed";
+                const label = addTextLines(svg, {
+                    x: SOURCE_LABEL_X,
+                    y: isMixed ? sourceTop + totalHeight / 2 - 20 : sourceTop + totalHeight / 2 - 4,
+                    lines: isMixed ? ["Mixed", "Waste"] : [item.name],
+                    size: 26,
+                    weight: 500,
+                    lineGap: isMixed ? 28 : 16
+                });
+
+                const meta = addTextLines(svg, {
+                    x: SOURCE_LABEL_X,
+                    y: isMixed ? sourceTop + totalHeight / 2 + 32 : sourceTop + totalHeight / 2 + 14,
+                    size: 10,
+                    weight: 400,
+                    lineGap: 13,
+                    fill: "#4c4945",
+                    lines: [
+                        `Recycling Rate: ${item.recyclingRate.toFixed(1)}%`,
+                        `Disposal Rate: ${item.disposalRate.toFixed(1)}%`
+                    ]
+                });
+
+                const hit = el("rect");
+                hit.setAttribute("class", "material-hit");
+                hit.setAttribute("x", SOURCE_LABEL_X - 4);
+                hit.setAttribute("y", sourceTop - 4);
+                hit.setAttribute("width", 220);
+                hit.setAttribute("height", totalHeight + 10);
+                svg.appendChild(hit);
+
+                const recycleHit = el("path");
+                recycleHit.setAttribute("class", "flow-hit");
+                recycleHit.setAttribute("d", flowPath(FLOW_START_X, recycleCenterSource, SINK_X, recycleCenterTarget, recycleHeightLocal));
+                recycleHit.setAttribute("stroke-width", Math.max(12, recycleHeightLocal + 8));
+                svg.appendChild(recycleHit);
+
+                const disposalHit = el("path");
+                disposalHit.setAttribute("class", "flow-hit");
+                disposalHit.setAttribute("d", flowPath(FLOW_START_X, disposalCenterSource, SINK_X, disposalCenterTarget, disposalHeightLocal));
+                disposalHit.setAttribute("stroke-width", Math.max(12, disposalHeightLocal + 8));
+                svg.appendChild(disposalHit);
+
+                const tooltipHtml = `
+                    <strong>${item.name}</strong><br>
+                    Recycling Rate: ${item.recyclingRate.toFixed(1)}%<br>
+                    Disposal Rate: ${item.disposalRate.toFixed(1)}%
+                `;
+
+                [hit, recycleHit, disposalHit].forEach(target => {
+                    target.addEventListener("pointerenter", event => {
+                        highlightMaterial(item.id);
+                        setTooltip(tooltipHtml, event);
+                    });
+                    target.addEventListener("pointermove", moveTooltip);
+                    target.addEventListener("pointerleave", () => {
+                        clearHighlight();
+                        hideTooltip();
+                    });
+                });
+
+                materialElements.set(item.id, {
+                    flows: [recycleFlow, disposalFlow],
+                    node,
+                    anchor,
+                    label,
+                    meta
+                });
+            });
+
+            [recycleNode, disposalNode].forEach((node, idx) => {
+                const isRecycle = idx === 0;
+                node.addEventListener("pointerenter", event => {
+                    highlightType(isRecycle ? "recycling" : "disposal");
+                    setTooltip(
+                        isRecycle
+                            ? `<strong>Recycling Stream</strong><br>Total Share: ${recyclePercent}%`
+                            : `<strong>Disposal Stream</strong><br>Total Share: ${disposalPercent}%`,
+                        event
+                    );
+                });
+                node.addEventListener("pointermove", moveTooltip);
+                node.addEventListener("pointerleave", () => {
+                    clearHighlight();
+                    hideTooltip();
+                });
+            });
+        }
+
+        drawStaticText();
+        drawFlows();
+    </script>
+</body>
+</html>

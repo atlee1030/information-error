@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinity Ratio</title>
+    <link rel="stylesheet" href="https://use.typekit.net/ufh5wxj.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="panel-nav.css">
+    <script src="panel-nav.js" defer></script>
+    <style>
+        :root {
+            --bg: rgb(218, 210, 199);
+            --ink: #232323;
+            --muted: #3f3d3a;
+            --frame-pad: 8px;
+            --frame-left-column: 250px;
+            --frame-right-column: 230px;
+            --frame-top-row: 58px;
+            --frame-bottom-row: 56px;
+            --stage-ratio: 1.2941176471;
+            --stage-safety: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            font-family: "oxanium", sans-serif;
+        }
+
+        header {
+            position: absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 40px;
+            box-sizing: border-box;
+            z-index: 120;
+            pointer-events: none;
+        }
+
+        .logo {
+            font-size: 36px;
+            color: black;
+            text-decoration: none;
+            pointer-events: auto;
+        }
+
+        nav {
+            display: flex;
+            gap: 40px;
+            pointer-events: auto;
+        }
+
+        nav a {
+            font-size: 24px;
+            color: black;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        nav a:hover {
+            opacity: 0.5;
+        }
+
+        .active {
+            border-bottom: 2px solid black;
+        }
+
+        .page {
+            min-height: 100vh;
+            padding:
+                calc(var(--frame-pad) + var(--frame-top-row) + var(--stage-safety))
+                calc(var(--frame-pad) + var(--frame-right-column) + var(--stage-safety))
+                calc(var(--frame-pad) + var(--frame-bottom-row) + var(--stage-safety))
+                calc(var(--frame-pad) + var(--frame-left-column) + var(--stage-safety));
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .stage-wrap {
+            position: relative;
+            width: min(
+                calc(100vw - (var(--frame-left-column) + var(--frame-right-column) + (var(--frame-pad) * 2) + (var(--stage-safety) * 2))),
+                calc((100vh - (var(--frame-top-row) + var(--frame-bottom-row) + (var(--frame-pad) * 2) + (var(--stage-safety) * 2))) * var(--stage-ratio))
+            );
+            max-height: calc(100vh - (var(--frame-top-row) + var(--frame-bottom-row) + (var(--frame-pad) * 2) + (var(--stage-safety) * 2)));
+            aspect-ratio: 3300 / 2550;
+            overflow: hidden;
+        }
+
+        .copy-panel {
+            position: absolute;
+            z-index: 2;
+            left: 76px;
+            top: 48px;
+            width: 300px;
+        }
+
+        .copy-panel h1 {
+            margin: 0 0 16px;
+            font-size: 40px;
+            line-height: 0.94;
+            font-weight: 500;
+            letter-spacing: 0.004em;
+        }
+
+        .copy-panel p {
+            margin: 0;
+            color: rgba(35, 35, 35, 0.9);
+            font-size: 12.8px;
+            line-height: 1.18;
+            font-weight: 300;
+        }
+
+        .viz {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .bubble-circle {
+            transition: fill 0.2s ease;
+        }
+
+        .bubble-name {
+            fill: #121212;
+            font-weight: 400;
+            letter-spacing: 0.004em;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            pointer-events: none;
+        }
+
+        .bubble-value {
+            fill: #121212;
+            font-weight: 400;
+            letter-spacing: 0.004em;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            pointer-events: none;
+        }
+
+        .citation {
+            position: absolute;
+            left: 76px;
+            bottom: 14px;
+            margin: 0;
+            max-width: 900px;
+            color: rgba(35, 35, 35, 0.72);
+            font-size: 8.6px;
+            line-height: 1.22;
+            font-weight: 300;
+            z-index: 2;
+        }
+
+        @media (max-width: 1180px) {
+            :root {
+                --frame-left-column: 120px;
+                --frame-right-column: 110px;
+                --frame-bottom-row: 72px;
+            }
+
+            .copy-panel {
+                left: 34px;
+                top: 34px;
+                width: 300px;
+            }
+
+            .copy-panel h1 {
+                font-size: 46px;
+            }
+
+            .copy-panel p {
+                font-size: 16px;
+            }
+
+            .citation {
+                left: 34px;
+                max-width: 680px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            :root {
+                --frame-pad: 0px;
+                --frame-left-column: 0px;
+                --frame-right-column: 0px;
+                --frame-top-row: 66px;
+                --frame-bottom-row: 0px;
+                --stage-safety: 8px;
+            }
+
+            .page {
+                padding: calc(var(--frame-top-row) + var(--stage-safety)) 8px 96px;
+            }
+
+            .copy-panel {
+                left: 18px;
+                top: 14px;
+                width: 250px;
+            }
+
+            .copy-panel h1 {
+                font-size: 34px;
+            }
+
+            .copy-panel p {
+                font-size: 12.5px;
+            }
+
+            .citation {
+                left: 18px;
+                right: 18px;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body data-panel-page="infinity-ratio">
+    <header>
+        <a href="index.html" class="logo">Error of Information</a>
+        <nav>
+            <a href="project1.html">Project 1</a>
+            <a href="project2.html" class="active">Project 2</a>
+        </nav>
+    </header>
+
+    <main class="page">
+        <section class="stage-wrap">
+            <article class="copy-panel">
+                <h1>Infinity Ratio</h1>
+                <p>
+                    The previous data examined each province's recycling and incineration rates, identifying which materials are infinitely recyclable and which undergo limited recycling (downcycling). Based on this data, we calculated the average recycling rate for metals and glass and used this value to create an Infinity Ratio metric for each province.
+                </p>
+            </article>
+
+            <svg id="infinity-ratio-viz" class="viz" viewBox="0 0 1400 1082" aria-label="Infinity Ratio bubble chart">
+                <g id="bubble-layer"></g>
+            </svg>
+
+            <p class="citation">
+                Environment and Climate Change Canada. National Waste Characterization Report: The Composition of Canadian Residential Municipal Solid Waste.<br>
+                Statistics Canada, "Table 38-10-0032-01: Materials diverted from the waste stream, by type of material," last modified September 23, 2024.
+            </p>
+        </section>
+    </main>
+
+    <script>
+        const svg = document.getElementById("infinity-ratio-viz");
+        const bubbleLayer = document.getElementById("bubble-layer");
+
+        const bubblesData = [
+            { name: "British Columbia", value: 55, x: 760, y: 285, r: 145, color: "#5ea9a6", nameSize: 34, valueSize: 32 },
+            { name: "Saskatchewan", value: 50, x: 467, y: 492, r: 132, color: "#60a9a6", nameSize: 34, valueSize: 32 },
+            { name: "Ontario", value: 39, x: 1035, y: 485, r: 122, color: "#8ccdc8", nameSize: 32, valueSize: 30 },
+            { name: "Quebec", value: 64, x: 760, y: 625, r: 168, color: "#4f7c78", nameSize: 48, valueSize: 46 },
+            { name: "Alberta", value: 42, x: 485, y: 776, r: 122, color: "#63b4b5", nameSize: 34, valueSize: 32 },
+            { name: "Manitoba", value: 42, x: 695, y: 945, r: 126, color: "#4eb0af", nameSize: 34, valueSize: 32 },
+            { name: "Nova Scotia", value: 27, x: 960, y: 890, r: 108, color: "#dcc66c", nameSize: 30, valueSize: 28 },
+            { name: "New Brunswick", value: 11, x: 1010, y: 690, r: 66, color: "#e7847b", nameSize: 11, valueSize: 17 }
+        ];
+
+        const pointer = { x: -9999, y: -9999, inside: false };
+        const VIEW_W = 1400;
+        const VIEW_H = 1082;
+        const CLUSTER_SHIFT_X = -70;
+        const CLUSTER_SHIFT_Y = -55;
+
+        const bubbles = bubblesData.map((item) => {
+            const initialX = item.x + CLUSTER_SHIFT_X;
+            const initialY = item.y + CLUSTER_SHIFT_Y;
+            const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("class", "bubble-circle");
+            circle.setAttribute("fill", item.color);
+            circle.setAttribute("r", item.r);
+            group.appendChild(circle);
+
+            const lines = item.lines || [item.name];
+
+            const name = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            name.setAttribute("class", "bubble-name");
+            name.setAttribute("font-size", item.nameSize);
+            lines.forEach((line, idx) => {
+                const tspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+                tspan.textContent = line;
+                tspan.setAttribute("x", initialX);
+                tspan.setAttribute("dy", idx === 0 ? "0" : `${item.nameSize * 1.02}`);
+                name.appendChild(tspan);
+            });
+            group.appendChild(name);
+
+            const value = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            value.setAttribute("class", "bubble-value");
+            value.setAttribute("font-size", item.valueSize);
+            value.textContent = `${item.value}%`;
+            group.appendChild(value);
+
+            bubbleLayer.appendChild(group);
+
+            return {
+                ...item,
+                group,
+                circle,
+                name,
+                value,
+                lines,
+                baseX: initialX,
+                baseY: initialY,
+                x: initialX,
+                y: initialY,
+                vx: 0,
+                vy: 0
+            };
+        });
+
+        function syncBubbleNodes(bubble) {
+            bubble.circle.setAttribute("cx", bubble.x);
+            bubble.circle.setAttribute("cy", bubble.y);
+
+            bubble.name.setAttribute("x", bubble.x);
+            const lineHeight = bubble.nameSize * 1.02;
+            const totalHeight = lineHeight * bubble.lines.length;
+            const startY = bubble.y - (bubble.r * 0.14) - (totalHeight * 0.5) + (lineHeight * 0.68);
+            bubble.name.setAttribute("y", startY);
+            const spans = bubble.name.querySelectorAll("tspan");
+            spans.forEach((span, idx) => {
+                span.setAttribute("x", bubble.x);
+                span.setAttribute("dy", idx === 0 ? "0" : `${lineHeight}`);
+            });
+
+            bubble.value.setAttribute("x", bubble.x);
+            bubble.value.setAttribute("y", bubble.y + (bubble.r * 0.2));
+        }
+
+        function updatePointer(event) {
+            const rect = svg.getBoundingClientRect();
+            pointer.x = ((event.clientX - rect.left) / rect.width) * VIEW_W;
+            pointer.y = ((event.clientY - rect.top) / rect.height) * VIEW_H;
+            pointer.inside = true;
+        }
+
+        svg.addEventListener("pointermove", updatePointer);
+        svg.addEventListener("pointerenter", updatePointer);
+        svg.addEventListener("pointerleave", () => {
+            pointer.inside = false;
+        });
+
+        function animate() {
+            bubbles.forEach((bubble) => {
+                let targetX = bubble.baseX;
+                let targetY = bubble.baseY;
+
+                if (pointer.inside) {
+                    const dx = bubble.baseX - pointer.x;
+                    const dy = bubble.baseY - pointer.y;
+                    const dist = Math.hypot(dx, dy);
+                    const influence = bubble.r + 110;
+
+                    if (dist < influence) {
+                        const safeDist = Math.max(dist, 1);
+                        const strength = (1 - (dist / influence)) * 7;
+                        targetX += (dx / safeDist) * strength;
+                        targetY += (dy / safeDist) * strength;
+                    }
+                }
+
+                bubble.vx += (targetX - bubble.x) * 0.1;
+                bubble.vy += (targetY - bubble.y) * 0.1;
+                bubble.vx *= 0.85;
+                bubble.vy *= 0.85;
+                bubble.x += bubble.vx;
+                bubble.y += bubble.vy;
+            });
+
+            // Keep circles from overlapping, even while reacting to the pointer.
+            for (let iter = 0; iter < 2; iter += 1) {
+                for (let i = 0; i < bubbles.length; i += 1) {
+                    for (let j = i + 1; j < bubbles.length; j += 1) {
+                        const a = bubbles[i];
+                        const b = bubbles[j];
+                        const dx = b.x - a.x;
+                        const dy = b.y - a.y;
+                        const dist = Math.hypot(dx, dy) || 1;
+                        const minDist = a.r + b.r + 4;
+
+                        if (dist < minDist) {
+                            const push = (minDist - dist) * 0.5;
+                            const nx = dx / dist;
+                            const ny = dy / dist;
+                            a.x -= nx * push;
+                            a.y -= ny * push;
+                            b.x += nx * push;
+                            b.y += ny * push;
+                        }
+                    }
+                }
+            }
+
+            bubbles.forEach((bubble) => {
+                const margin = bubble.r + 8;
+                bubble.x = Math.max(margin, Math.min(VIEW_W - margin, bubble.x));
+                bubble.y = Math.max(margin, Math.min(VIEW_H - margin, bubble.y));
+                syncBubbleNodes(bubble);
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        bubbles.forEach(syncBubbleNodes);
+        animate();
+    </script>
+</body>
+</html>

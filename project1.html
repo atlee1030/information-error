@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error of Information - Project 1</title>
+    
+    <link rel="stylesheet" href="https://use.typekit.net/ufh5wxj.css">
+    <link rel="stylesheet" href="panel-nav.css">
+    <script src="panel-nav.js" defer></script>
+    <script>
+        (function(d) {
+            var config = {
+                kitId: "ufh5wxj",
+                scriptTimeout: 3000,
+                async: true
+            };
+            var h = d.documentElement;
+            var t = setTimeout(function() {
+                h.className = h.className.replace(/\bwf-loading\b/g, "") + " wf-inactive";
+            }, config.scriptTimeout);
+            var tk = d.createElement("script");
+            var f = false;
+            var s = d.getElementsByTagName("script")[0];
+            var a;
+            h.className += " wf-loading";
+            tk.src = "https://use.typekit.net/" + config.kitId + ".js";
+            tk.async = true;
+            tk.onload = tk.onreadystatechange = function() {
+                a = this.readyState;
+                if (f || (a && a !== "complete" && a !== "loaded")) return;
+                f = true;
+                clearTimeout(t);
+                try {
+                    Typekit.load(config);
+                } catch (e) {}
+            };
+            s.parentNode.insertBefore(tk, s);
+        })(document);
+    </script>
+
+    <style>
+        html,
+        body { 
+            margin: 0; 
+            padding: 0; 
+            min-height: 100vh;
+            background-color: rgb(205, 194, 183);
+            background-image: url("image/project1_background2.jpg");
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover;
+        }
+
+        body {
+            font-family: "oxanium", sans-serif; 
+            font-weight: 400;
+            color: black;
+        }
+
+        body { cursor: pointer; }
+
+        header {
+            position: absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 40px;
+            box-sizing: border-box;
+            z-index: 120;
+            pointer-events: none;
+        }
+
+        .logo { 
+            font-size: 36px; 
+            color: black; 
+            text-decoration: none; 
+            font-family: "oxanium", sans-serif;
+            font-style: normal;
+            font-weight: 400;
+            pointer-events: auto;
+        }
+
+        nav { display: flex; gap: 40px; pointer-events: auto; }
+
+        nav a { 
+            font-size: 24px; 
+            color: black; 
+            text-decoration: none; 
+            font-family: "oxanium", sans-serif;
+            font-style: normal;
+            font-weight: 400;
+            cursor: pointer; 
+            transition: opacity 0.3s;
+        }
+
+        nav a:hover {
+            opacity: 0.5;
+        }
+
+        .active {
+            border-bottom: 2px solid black;
+        }
+
+        main {
+            min-height: 100vh;
+            padding-top: 92px;
+            display: grid;
+            place-items: center;
+        }
+
+        .peace-stack {
+            --pair-shift-x: -4px;
+            --pair-shift-y: -56px;
+            --pair-gap: 20px;
+            --glyph-size: clamp(380px, 48vw, 760px);
+            --glyph-scale-y: 0.74;
+            --truth-overlay-scale: 1.08;
+            --truth-top-scale-x: 0.9;
+            --truth-top-scale-y: 1;
+            --truth-bottom-scale-x: 1;
+            --truth-bottom-scale-y: 1;
+            --truth-top-offset-x: -10px;
+            --truth-top-offset-y: -16px;
+            --truth-bottom-offset-x: 0px;
+            --truth-bottom-offset-y: -18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            gap: var(--pair-gap);
+            transform: translate(var(--pair-shift-x), var(--pair-shift-y));
+            user-select: none;
+        }
+
+        .peace-glyph {
+            margin: 0;
+            line-height: 0.9;
+            font-size: var(--glyph-size);
+            font-family: "rixjongno-pro", "oxanium", sans-serif;
+            font-style: italic;
+            font-weight: 400;
+            letter-spacing: -0.012em;
+            font-synthesis: none;
+            text-rendering: geometricPrecision;
+            transform-origin: center center;
+            position: relative;
+            opacity: 1;
+            filter: none;
+            z-index: 3;
+            transform: translate(var(--glyph-offset-x, 0px), var(--glyph-offset-y, 0px)) scaleX(var(--glyph-scale-x, 1)) scaleY(var(--glyph-scale-y));
+        }
+
+        .peace-glyph.top {
+            color: rgba(117, 34, 32, 0.66);
+            --glyph-offset-x: 8px;
+            --glyph-offset-y: 0px;
+            --glyph-scale-x: 1;
+        }
+
+        .peace-glyph.bottom {
+            color: rgba(30, 61, 114, 0.66);
+            --glyph-offset-x: -7px;
+            --glyph-offset-y: -24px;
+            --glyph-scale-x: 1;
+        }
+
+        .peace-glyph::before,
+        .peace-glyph::after {
+            content: attr(data-char);
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0;
+            mix-blend-mode: screen;
+        }
+
+        .peace-glyph::before {
+            color: rgba(255, 90, 90, 0.55);
+            transform: translate(-2px, 0);
+        }
+
+        .peace-glyph::after {
+            color: rgba(90, 130, 255, 0.52);
+            transform: translate(2px, 0);
+        }
+
+        body.has-truth .peace-glyph {
+            opacity: 0;
+            transition: opacity 120ms ease-out;
+        }
+
+        .truth-source {
+            display: none;
+        }
+
+        .truth-canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 4;
+            opacity: 0;
+            filter: blur(1.6px);
+        }
+
+        body.has-truth .truth-canvas {
+            opacity: 0.96;
+            filter: blur(0);
+        }
+
+        body.is-glitching .truth-canvas {
+            animation: truth-glitch 420ms steps(2, end);
+        }
+
+        body.is-glitching .peace-glyph {
+            animation: glyph-glitch 340ms steps(2, end);
+        }
+
+        body.is-glitching .peace-glyph::before {
+            animation: glitch-layer-1 90ms steps(2, end) 4;
+        }
+
+        body.is-glitching .peace-glyph::after {
+            animation: glitch-layer-2 80ms steps(2, end) 5;
+        }
+
+        @keyframes truth-glitch {
+            0% { opacity: 0; filter: blur(2.3px); transform: translate(0, 0); }
+            20% { opacity: 0.35; transform: translate(-2px, 1px); }
+            45% { opacity: 0.78; transform: translate(2px, -1px); }
+            70% { opacity: 0.94; transform: translate(-1px, 1px); }
+            100% { opacity: 0.96; filter: blur(0); transform: translate(0, 0); }
+        }
+
+        @keyframes glyph-glitch {
+            0% { transform: translate(var(--glyph-offset-x, 0px), var(--glyph-offset-y, 0px)) scaleX(var(--glyph-scale-x, 1)) scaleY(var(--glyph-scale-y)); }
+            30% { transform: translate(calc(var(--glyph-offset-x, 0px) + 4px), calc(var(--glyph-offset-y, 0px) - 1px)) scaleX(var(--glyph-scale-x, 1)) scaleY(var(--glyph-scale-y)); }
+            60% { transform: translate(calc(var(--glyph-offset-x, 0px) - 3px), calc(var(--glyph-offset-y, 0px) + 1px)) scaleX(var(--glyph-scale-x, 1)) scaleY(var(--glyph-scale-y)); }
+            100% { transform: translate(var(--glyph-offset-x, 0px), var(--glyph-offset-y, 0px)) scaleX(var(--glyph-scale-x, 1)) scaleY(var(--glyph-scale-y)); }
+        }
+
+        @keyframes glitch-layer-1 {
+            0%, 100% { opacity: 0; clip-path: inset(0 0 100% 0); }
+            20% { opacity: 1; clip-path: inset(8% 0 68% 0); }
+            40% { opacity: 0; clip-path: inset(0 0 100% 0); }
+            60% { opacity: 1; clip-path: inset(54% 0 26% 0); }
+            80% { opacity: 0.35; clip-path: inset(30% 0 44% 0); }
+        }
+
+        @keyframes glitch-layer-2 {
+            0%, 100% { opacity: 0; clip-path: inset(0 0 100% 0); }
+            18% { opacity: 0.9; clip-path: inset(14% 0 62% 0); }
+            35% { opacity: 0; clip-path: inset(0 0 100% 0); }
+            56% { opacity: 1; clip-path: inset(66% 0 10% 0); }
+            74% { opacity: 0.35; clip-path: inset(42% 0 30% 0); }
+        }
+
+    </style>
+</head>
+<body data-panel-page="" data-panel-nav="off">
+
+    <header>
+        <a href="index.html" class="logo">Error of Information</a>
+        <nav>
+            <a href="project1.html" class="active">Project 1</a>
+            <a href="project2.html">Project 2</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="peace-stack" aria-label="평화">
+            <p class="peace-glyph top" data-char="평">평</p>
+            <canvas class="truth-canvas" aria-hidden="true"></canvas>
+            <img class="truth-source truth-source-top" src="image/peace_top.png" alt="">
+            <img class="truth-source truth-source-bottom" src="image/peace_bottom.png" alt="">
+            <p class="peace-glyph bottom" data-char="화">화</p>
+        </section>
+    </main>
+    <script>
+        (() => {
+            const body = document.body;
+            const stack = document.querySelector(".peace-stack");
+            const topGlyph = stack ? stack.querySelector(".peace-glyph.top") : null;
+            const bottomGlyph = stack ? stack.querySelector(".peace-glyph.bottom") : null;
+            const truthCanvas = stack ? stack.querySelector(".truth-canvas") : null;
+            const topSource = stack ? stack.querySelector(".truth-source-top") : null;
+            const bottomSource = stack ? stack.querySelector(".truth-source-bottom") : null;
+            if (!stack || !topGlyph || !bottomGlyph || !truthCanvas || !topSource || !bottomSource) return;
+
+            let sourceMetrics = null;
+            let preparePromise = null;
+            let renderPlan = null;
+            let revealed = false;
+
+            const shouldIgnore = (target) => {
+                if (!(target instanceof Element)) return false;
+                return Boolean(target.closest("a, button, input, textarea, select"));
+            };
+
+            const toLocalCenter = (rect, parentRect) => {
+                return {
+                    x: rect.left - parentRect.left + (rect.width / 2),
+                    y: rect.top - parentRect.top + (rect.height / 2)
+                };
+            };
+
+            const fitCanvasToStack = () => {
+                const w = Math.max(1, Math.round(stack.clientWidth));
+                const h = Math.max(1, Math.round(stack.clientHeight));
+                if (truthCanvas.width !== w || truthCanvas.height !== h) {
+                    truthCanvas.width = w;
+                    truthCanvas.height = h;
+                }
+                return truthCanvas.getContext("2d");
+            };
+
+            const loadImage = (img) => {
+                if (img.complete && img.naturalWidth) return Promise.resolve(img);
+                return new Promise((resolve) => {
+                    img.addEventListener("load", () => resolve(img), { once: true });
+                });
+            };
+
+            const analyzeSingleSource = (img) => {
+                const naturalW = img.naturalWidth || 0;
+                const naturalH = img.naturalHeight || 0;
+                if (!naturalW || !naturalH) return null;
+
+                const maxScanWidth = 1200;
+                const scanScale = Math.min(1, maxScanWidth / naturalW);
+                const scanW = Math.max(1, Math.round(naturalW * scanScale));
+                const scanH = Math.max(1, Math.round(naturalH * scanScale));
+                const layer = document.createElement("canvas");
+                layer.width = scanW;
+                layer.height = scanH;
+                const ctx = layer.getContext("2d", { willReadFrequently: true });
+                if (!ctx) return null;
+                ctx.clearRect(0, 0, scanW, scanH);
+                ctx.drawImage(img, 0, 0, scanW, scanH);
+
+                let data;
+                try {
+                    data = ctx.getImageData(0, 0, scanW, scanH).data;
+                } catch (error) {
+                    return null;
+                }
+
+                let minX = scanW;
+                let minY = scanH;
+                let maxX = -1;
+                let maxY = -1;
+                for (let y = 0; y < scanH; y += 1) {
+                    const rowOffset = y * scanW * 4;
+                    for (let x = 0; x < scanW; x += 1) {
+                        const i = rowOffset + (x * 4);
+                        if (data[i + 3] <= 14) continue;
+                        if (x < minX) minX = x;
+                        if (y < minY) minY = y;
+                        if (x > maxX) maxX = x;
+                        if (y > maxY) maxY = y;
+                    }
+                }
+                if (maxX < 0 || maxY < 0) {
+                    return {
+                        layer,
+                        box: { x: 0, y: 0, w: scanW, h: scanH }
+                    };
+                }
+                return {
+                    layer,
+                    box: {
+                        x: minX,
+                        y: minY,
+                        w: (maxX - minX) + 1,
+                        h: (maxY - minY) + 1
+                    }
+                };
+            };
+
+            const buildRenderPlan = () => {
+                if (!sourceMetrics || !sourceMetrics.top || !sourceMetrics.bottom) return;
+                const stackRect = stack.getBoundingClientRect();
+                const topRect = topGlyph.getBoundingClientRect();
+                const bottomRect = bottomGlyph.getBoundingClientRect();
+                const overlayScale = Number.parseFloat(getComputedStyle(stack).getPropertyValue("--truth-overlay-scale")) || 1;
+                const topScaleX = Number.parseFloat(getComputedStyle(stack).getPropertyValue("--truth-top-scale-x")) || 1;
+                const topScaleY = Number.parseFloat(getComputedStyle(stack).getPropertyValue("--truth-top-scale-y")) || 1;
+                const bottomScaleX = Number.parseFloat(getComputedStyle(stack).getPropertyValue("--truth-bottom-scale-x")) || 1;
+                const bottomScaleY = Number.parseFloat(getComputedStyle(stack).getPropertyValue("--truth-bottom-scale-y")) || 1;
+                const topOffsetX = Number.parseFloat(getComputedStyle(stack).getPropertyValue("--truth-top-offset-x")) || 0;
+                const topOffsetY = Number.parseFloat(getComputedStyle(stack).getPropertyValue("--truth-top-offset-y")) || 0;
+                const bottomOffsetX = Number.parseFloat(getComputedStyle(stack).getPropertyValue("--truth-bottom-offset-x")) || 0;
+                const bottomOffsetY = Number.parseFloat(getComputedStyle(stack).getPropertyValue("--truth-bottom-offset-y")) || 0;
+
+                const topSrc = sourceMetrics.top.box;
+                const bottomSrc = sourceMetrics.bottom.box;
+
+                const topCenter = toLocalCenter(topRect, stackRect);
+                const bottomCenter = toLocalCenter(bottomRect, stackRect);
+                const topDest = {
+                    w: topRect.width * overlayScale * topScaleX,
+                    h: topRect.height * overlayScale * topScaleY
+                };
+                topDest.x = topCenter.x - (topDest.w / 2) + topOffsetX;
+                topDest.y = topCenter.y - (topDest.h / 2) + topOffsetY;
+
+                const bottomDest = {
+                    w: bottomRect.width * overlayScale * bottomScaleX,
+                    h: bottomRect.height * overlayScale * bottomScaleY
+                };
+                bottomDest.x = bottomCenter.x - (bottomDest.w / 2) + bottomOffsetX;
+                bottomDest.y = bottomCenter.y - (bottomDest.h / 2) + bottomOffsetY;
+
+                renderPlan = { topSrc, bottomSrc, topDest, bottomDest };
+            };
+
+            const drawFull = () => {
+                const ctx = fitCanvasToStack();
+                if (!ctx || !renderPlan) return;
+                ctx.clearRect(0, 0, truthCanvas.width, truthCanvas.height);
+                ctx.globalAlpha = 1;
+                ctx.drawImage(sourceMetrics.top.layer, renderPlan.topSrc.x, renderPlan.topSrc.y, renderPlan.topSrc.w, renderPlan.topSrc.h, renderPlan.topDest.x, renderPlan.topDest.y, renderPlan.topDest.w, renderPlan.topDest.h);
+                ctx.drawImage(sourceMetrics.bottom.layer, renderPlan.bottomSrc.x, renderPlan.bottomSrc.y, renderPlan.bottomSrc.w, renderPlan.bottomSrc.h, renderPlan.bottomDest.x, renderPlan.bottomDest.y, renderPlan.bottomDest.w, renderPlan.bottomDest.h);
+            };
+
+            const prepare = () => {
+                if (sourceMetrics) {
+                    buildRenderPlan();
+                    return Promise.resolve();
+                }
+                if (preparePromise) return preparePromise;
+                preparePromise = Promise.all([loadImage(topSource), loadImage(bottomSource)]).then(() => {
+                    sourceMetrics = {
+                        top: analyzeSingleSource(topSource),
+                        bottom: analyzeSingleSource(bottomSource)
+                    };
+                    if (!sourceMetrics.top || !sourceMetrics.bottom) return;
+                    buildRenderPlan();
+                });
+                return preparePromise;
+            };
+
+            const triggerReveal = (event) => {
+                if (shouldIgnore(event.target)) return;
+                const revealNow = () => {
+                    body.classList.remove("is-glitching");
+                    void body.offsetWidth;
+                    body.classList.add("is-glitching");
+                    window.clearTimeout(window.__peaceGlitchTimer);
+                    window.__peaceGlitchTimer = window.setTimeout(() => {
+                        body.classList.remove("is-glitching");
+                    }, 440);
+                };
+
+                if (!revealed) {
+                    prepare().then(() => {
+                        drawFull();
+                        revealed = true;
+                        body.classList.add("has-truth");
+                        revealNow();
+                    });
+                    return;
+                }
+
+                revealNow();
+            };
+
+            const onKeyGlitch = (event) => {
+                if (event.key !== "Enter" && event.key !== " ") return;
+                triggerReveal(event);
+            };
+
+            const onResize = () => {
+                if (!sourceMetrics) return;
+                buildRenderPlan();
+                if (revealed) drawFull();
+            };
+
+            window.addEventListener("click", triggerReveal, true);
+            window.addEventListener("keydown", onKeyGlitch, true);
+            window.addEventListener("resize", onResize);
+
+            const idlePrepare = () => {
+                prepare();
+            };
+            if ("requestIdleCallback" in window) {
+                window.requestIdleCallback(idlePrepare, { timeout: 800 });
+            } else {
+                window.setTimeout(idlePrepare, 220);
+            }
+        })();
+    </script>
+
+</body>
+</html>

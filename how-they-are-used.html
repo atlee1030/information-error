@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How They Are Used</title>
+    <link rel="stylesheet" href="https://use.typekit.net/ufh5wxj.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="panel-nav.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="panel-nav.js" defer></script>
+    <script src="how-they-are-used-graph.js" defer></script>
+    <style>
+        :root {
+            --bg: rgb(218, 210, 199);
+            --ink: #232323;
+            --frame-pad: 8px;
+            --frame-left-column: 250px;
+            --frame-right-column: 230px;
+            --frame-top-row: 58px;
+            --frame-bottom-row: 56px;
+            --stage-ratio: 1.52;
+            --stage-safety: 12px;
+            --stage-scale: 0.95;
+            --copy-shift-x: 0px;
+            --copy-shift-y: 44px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            font-family: "oxanium", sans-serif;
+        }
+
+        header {
+            position: absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 40px;
+            box-sizing: border-box;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .logo {
+            font-size: 36px;
+            color: black;
+            text-decoration: none;
+            pointer-events: auto;
+        }
+
+        nav {
+            display: flex;
+            gap: 40px;
+            pointer-events: auto;
+        }
+
+        nav a {
+            font-size: 24px;
+            color: black;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        nav a:hover {
+            opacity: 0.5;
+        }
+
+        .active {
+            border-bottom: 2px solid black;
+        }
+
+        .page {
+            min-height: 100vh;
+            padding:
+                calc(var(--frame-pad) + var(--frame-top-row) + var(--stage-safety))
+                calc(var(--frame-pad) + var(--frame-right-column) + var(--stage-safety))
+                calc(var(--frame-pad) + var(--frame-bottom-row) + var(--stage-safety))
+                calc(var(--frame-pad) + var(--frame-left-column) + var(--stage-safety));
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .stage-wrap {
+            width: min(
+                calc(100vw - (var(--frame-left-column) + var(--frame-right-column) + (var(--frame-pad) * 2) + (var(--stage-safety) * 2))),
+                calc((100vh - (var(--frame-top-row) + var(--frame-bottom-row) + (var(--frame-pad) * 2) + (var(--stage-safety) * 2))) * var(--stage-ratio))
+            );
+            height: min(
+                calc(100vh - (var(--frame-top-row) + var(--frame-bottom-row) + (var(--frame-pad) * 2) + (var(--stage-safety) * 2))),
+                calc((100vw - (var(--frame-left-column) + var(--frame-right-column) + (var(--frame-pad) * 2) + (var(--stage-safety) * 2))) / var(--stage-ratio))
+            );
+            min-height: 620px;
+        }
+
+        .usage-layout {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 318px 1fr;
+            gap: 34px;
+            align-items: stretch;
+            overflow: hidden;
+            transform: scale(var(--stage-scale));
+            transform-origin: top center;
+        }
+
+        .usage-copy {
+            padding-top: 4px;
+            transform: translate(var(--copy-shift-x), var(--copy-shift-y));
+        }
+
+        .usage-copy h1 {
+            margin: 0 0 72px;
+            font-size: 56px;
+            line-height: 0.94;
+            font-weight: 500;
+            letter-spacing: 0.002em;
+        }
+
+        .usage-item {
+            margin: 0 0 52px;
+        }
+
+        .usage-item:last-of-type {
+            margin-bottom: 0;
+        }
+
+        .usage-item h2 {
+            margin: 0 0 10px;
+            font-size: 34px;
+            line-height: 0.96;
+            font-weight: 450;
+        }
+
+        .usage-item p {
+            margin: 0;
+            color: rgba(35, 35, 35, 0.9);
+            font-size: 14.5px;
+            line-height: 1.32;
+            font-weight: 300;
+        }
+
+        .usage-graph-wrap {
+            position: relative;
+            overflow: hidden;
+        }
+
+        #usage-graph-canvas {
+            position: absolute;
+            inset: 0;
+        }
+
+        #usage-graph-canvas canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .usage-citation {
+            position: absolute;
+            right: 4px;
+            bottom: 2px;
+            margin: 0;
+            max-width: 52%;
+            color: rgba(35, 35, 35, 0.72);
+            font-size: 8.6px;
+            line-height: 1.24;
+            font-weight: 300;
+        }
+
+        @media (max-width: 1220px) {
+            :root {
+                --frame-left-column: 120px;
+                --frame-right-column: 110px;
+                --frame-bottom-row: 72px;
+                --stage-scale: 0.97;
+                --copy-shift-y: 30px;
+            }
+
+            .usage-layout {
+                grid-template-columns: 294px 1fr;
+                gap: 24px;
+            }
+
+            .usage-copy h1 {
+                font-size: 50px;
+                margin-bottom: 54px;
+            }
+
+            .usage-item h2 {
+                font-size: 31px;
+            }
+
+            .usage-item {
+                margin-bottom: 42px;
+            }
+
+            .usage-item p {
+                font-size: 13.5px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            :root {
+                --frame-pad: 0px;
+                --frame-left-column: 0px;
+                --frame-right-column: 0px;
+                --frame-top-row: 66px;
+                --frame-bottom-row: 0px;
+                --stage-safety: 8px;
+                --stage-scale: 1;
+                --copy-shift-y: 0px;
+            }
+
+            .page {
+                padding: calc(var(--frame-top-row) + var(--stage-safety)) 8px 96px;
+            }
+
+            .stage-wrap {
+                width: 100%;
+                height: auto;
+                min-height: 0;
+            }
+
+            .usage-layout {
+                grid-template-columns: 1fr;
+                gap: 24px;
+                overflow: visible;
+            }
+
+            .usage-copy {
+                order: 1;
+            }
+
+            .usage-graph-wrap {
+                order: 2;
+                min-height: 540px;
+            }
+
+            .usage-citation {
+                max-width: 74%;
+                right: 8px;
+                bottom: 8px;
+            }
+        }
+    </style>
+</head>
+<body data-panel-page="how-they-are-used">
+    <header>
+        <a href="index.html" class="logo">Error of Information</a>
+        <nav>
+            <a href="project1.html">Project 1</a>
+            <a href="project2.html" class="active">Project 2</a>
+        </nav>
+    </header>
+
+    <main class="page">
+        <section class="stage-wrap">
+            <div class="usage-layout">
+                <section class="usage-copy" aria-label="Material usage notes">
+                    <h1>How They<br>Are Used</h1>
+
+                    <article class="usage-item">
+                        <h2>Metal</h2>
+                        <p>Metals, like glass, can be melted down and recycled infinitely, and production through recycling is actually more cost-effective.</p>
+                    </article>
+
+                    <article class="usage-item">
+                        <h2>Glass</h2>
+                        <p>Unlike plastic, glass cannot be reborn into various forms. However, glass is suitable for true recycling because it can be melted down during the recycling process and reborn infinitely as the same glass without any loss in quality.</p>
+                    </article>
+
+                    <article class="usage-item">
+                        <h2>Paper</h2>
+                        <p>Paper can be recycled 5 to 7 times due to quality degradation with each recycling cycle. It can be recycled more times than plastic, which degrades in quality, because paper retains usability in many forms even after degradation.</p>
+                    </article>
+
+                    <article class="usage-item">
+                        <h2>Organic</h2>
+                        <p>Organic materials may be difficult to categorize in terms of recycling cycles. Rather than recycling, they are closer to returning to nature, as they can be sent back through composting or used to grow crops.</p>
+                    </article>
+
+                    <article class="usage-item">
+                        <h2>Plastic</h2>
+                        <p>Plastic can be recycled into various materials. The most commonly known examples are recycled plastic bottles or plastic bags. Each recycling process, however, degrades its quality, often limiting reuse to about one or two cycles.</p>
+                    </article>
+                </section>
+
+                <section class="usage-graph-wrap" aria-label="Material usage relationship graph">
+                    <div id="usage-graph-canvas"></div>
+                    <p class="usage-citation">
+                        Environmental Protection Agency. "Recycling Basics and Benefits," last modified November 15, 2023.<br>
+                        Lockhite. "Infinitely Recyclable Materials: What Are They and Does It Matter?", accessed March 10, 2026.
+                    </p>
+                </section>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
