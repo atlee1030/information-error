@@ -14,16 +14,14 @@
         :root {
             --bg: rgb(218, 210, 199);
             --ink: #232323;
-            --frame-pad: 8px;
-            --frame-left-column: 250px;
-            --frame-right-column: 230px;
-            --frame-top-row: 58px;
-            --frame-bottom-row: 56px;
-            --stage-ratio: 1.52;
-            --stage-safety: 12px;
-            --stage-scale: 0.95;
-            --copy-shift-x: 0px;
-            --copy-shift-y: 44px;
+            --frame-pad: clamp(0px, 0.5vw, 8px);
+            --frame-left-column: clamp(40px, 15vw, 250px);
+            --frame-right-column: clamp(40px, 14vw, 230px);
+            --frame-top-row: clamp(44px, 4.2vw, 58px);
+            --frame-bottom-row: clamp(42px, 4vw, 56px);
+            --stage-ratio: 1.5556;
+            --stage-safety: clamp(6px, 1vw, 12px);
+            --stage-offset-x: clamp(22px, 2vw, 44px);
         }
 
         * {
@@ -33,6 +31,7 @@
         html,
         body {
             margin: 0;
+            overflow-x: hidden;
             min-height: 100vh;
         }
 
@@ -49,14 +48,14 @@
             left: 0;
             display: flex;
             justify-content: space-between;
-            padding: 40px;
+            padding: clamp(14px, 2.4vw, 40px);
             box-sizing: border-box;
             z-index: 100;
             pointer-events: none;
         }
 
         .logo {
-            font-size: 36px;
+            font-size: clamp(18px, 2.1vw, 36px);
             color: black;
             text-decoration: none;
             pointer-events: auto;
@@ -64,12 +63,12 @@
 
         nav {
             display: flex;
-            gap: 40px;
+            gap: clamp(14px, 2vw, 40px);
             pointer-events: auto;
         }
 
         nav a {
-            font-size: 24px;
+            font-size: clamp(15px, 1.4vw, 24px);
             color: black;
             text-decoration: none;
             transition: opacity 0.3s;
@@ -83,12 +82,41 @@
             border-bottom: 2px solid black;
         }
 
+
+        @media (max-width: 900px) {
+            header {
+                padding: 18px 16px;
+            }
+
+            .logo {
+                font-size: 22px;
+            }
+
+            nav {
+                gap: 18px;
+            }
+
+            nav a {
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .logo {
+                font-size: 18px;
+            }
+
+            nav a {
+                font-size: 15px;
+            }
+        }
+
         .page {
             min-height: 100vh;
             padding:
                 calc(var(--frame-pad) + var(--frame-top-row) + var(--stage-safety))
                 calc(var(--frame-pad) + var(--frame-right-column) + var(--stage-safety))
-                calc(var(--frame-pad) + var(--frame-bottom-row) + var(--stage-safety))
+                calc(var(--frame-pad) + var(--frame-bottom-row) + var(--stage-safety) + 44px)
                 calc(var(--frame-pad) + var(--frame-left-column) + var(--stage-safety));
             display: flex;
             justify-content: center;
@@ -104,36 +132,39 @@
                 calc(100vh - (var(--frame-top-row) + var(--frame-bottom-row) + (var(--frame-pad) * 2) + (var(--stage-safety) * 2))),
                 calc((100vw - (var(--frame-left-column) + var(--frame-right-column) + (var(--frame-pad) * 2) + (var(--stage-safety) * 2))) / var(--stage-ratio))
             );
-            min-height: 620px;
+            min-height: 0;
+            overflow: visible;
+            transform: translateX(var(--stage-offset-x));
         }
 
         .usage-layout {
             width: 100%;
             height: 100%;
             display: grid;
-            grid-template-columns: 318px 1fr;
-            gap: 34px;
+            grid-template-columns: clamp(208px, 24vw, 380px) minmax(0, 1fr);
+            gap: clamp(14px, 2vw, 38px);
             align-items: stretch;
-            overflow: hidden;
-            transform: scale(var(--stage-scale));
-            transform-origin: top center;
+            overflow: visible;
         }
 
         .usage-copy {
-            padding-top: 4px;
-            transform: translate(var(--copy-shift-x), var(--copy-shift-y));
+            padding-top: clamp(8px, 1.2vh, 16px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transform: translateX(clamp(18px, 1.6vw, 32px));
         }
 
         .usage-copy h1 {
-            margin: 0 0 72px;
-            font-size: 56px;
+            margin: 0 0 clamp(14px, 2vw, 56px);
+            font-size: clamp(28px, 2.6vw, 70px);
             line-height: 0.94;
             font-weight: 500;
             letter-spacing: 0.002em;
         }
 
         .usage-item {
-            margin: 0 0 52px;
+            margin: 0 0 clamp(9px, 1.2vw, 34px);
         }
 
         .usage-item:last-of-type {
@@ -141,8 +172,8 @@
         }
 
         .usage-item h2 {
-            margin: 0 0 10px;
-            font-size: 34px;
+            margin: 0 0 clamp(5px, 0.6vw, 14px);
+            font-size: clamp(16px, 1.25vw, 32px);
             line-height: 0.96;
             font-weight: 450;
         }
@@ -150,14 +181,44 @@
         .usage-item p {
             margin: 0;
             color: rgba(35, 35, 35, 0.9);
-            font-size: 14.5px;
-            line-height: 1.32;
+            font-size: clamp(8.9px, 0.68vw, 17px);
+            line-height: clamp(1.12, 1.12 + 0.08vw, 1.26);
             font-weight: 300;
+        }
+
+        @media (max-height: 860px) {
+            .usage-layout {
+                grid-template-columns: 280px 1fr;
+                gap: 22px;
+            }
+
+            .usage-copy h1 {
+                font-size: 38px;
+                margin-bottom: 18px;
+            }
+
+            .usage-item {
+                margin-bottom: 16px;
+            }
+
+            .usage-item h2 {
+                font-size: 24px;
+                margin-bottom: 4px;
+            }
+
+            .usage-item p {
+                font-size: 13px;
+                line-height: 1.2;
+            }
         }
 
         .usage-graph-wrap {
             position: relative;
             overflow: hidden;
+            height: 100%;
+            min-height: 0;
+            min-width: 0;
+            --graph-ui-scale: 1;
         }
 
         #usage-graph-canvas {
@@ -167,20 +228,36 @@
 
         #usage-graph-canvas canvas {
             display: block;
-            width: 100% !important;
-            height: 100% !important;
         }
 
         .usage-citation {
             position: absolute;
-            right: 4px;
-            bottom: 2px;
+            right: calc(10px * var(--graph-ui-scale));
+            bottom: calc(2px * var(--graph-ui-scale));
             margin: 0;
-            max-width: 52%;
+            max-width: 46%;
             color: rgba(35, 35, 35, 0.72);
-            font-size: 8.6px;
+            font-size: calc(11.5px * var(--graph-ui-scale));
             line-height: 1.24;
             font-weight: 300;
+            transform-origin: right bottom;
+        }
+
+        @media (max-width: 1180px) {
+            .usage-citation {
+                right: 8px;
+                bottom: -16px;
+                max-width: 58%;
+            }
+        }
+
+        @media (max-width: 1040px) {
+            .usage-citation {
+                right: 6px;
+                bottom: -28px;
+                max-width: 64%;
+                font-size: calc(10.2px * var(--graph-ui-scale));
+            }
         }
 
         @media (max-width: 1220px) {
@@ -188,30 +265,6 @@
                 --frame-left-column: 120px;
                 --frame-right-column: 110px;
                 --frame-bottom-row: 72px;
-                --stage-scale: 0.97;
-                --copy-shift-y: 30px;
-            }
-
-            .usage-layout {
-                grid-template-columns: 294px 1fr;
-                gap: 24px;
-            }
-
-            .usage-copy h1 {
-                font-size: 50px;
-                margin-bottom: 54px;
-            }
-
-            .usage-item h2 {
-                font-size: 31px;
-            }
-
-            .usage-item {
-                margin-bottom: 42px;
-            }
-
-            .usage-item p {
-                font-size: 13.5px;
             }
         }
 
@@ -223,8 +276,7 @@
                 --frame-top-row: 66px;
                 --frame-bottom-row: 0px;
                 --stage-safety: 8px;
-                --stage-scale: 1;
-                --copy-shift-y: 0px;
+                --stage-offset-x: 0px;
             }
 
             .page {
@@ -250,6 +302,7 @@
             .usage-graph-wrap {
                 order: 2;
                 min-height: 540px;
+                height: 540px;
             }
 
             .usage-citation {
@@ -302,7 +355,25 @@
                 </section>
 
                 <section class="usage-graph-wrap" aria-label="Material usage relationship graph">
-                    <div id="usage-graph-canvas"></div>
+                    <div
+                        id="usage-graph-canvas"
+                        data-design-width="1400"
+                        data-design-height="900"
+                        data-visual-scale="1.24"
+                        data-graph-scale-max="1.24"
+                        data-graph-shift-x="10"
+                        data-graph-shift-y="-26"
+                        data-text-scale-min="0.74"
+                        data-text-scale-max="1.08"
+                        data-center-text-scale-min="0.42"
+                        data-center-text-scale-max="1.04"
+                        data-category-text-size="14.2"
+                        data-item-text-size="12.2"
+                        data-responsive-breakpoint="1240"
+                        data-responsive-min-factor="0.84"
+                        data-center-spread-breakpoint="1240"
+                        data-center-spread-max="1.22"
+                    ></div>
                     <p class="usage-citation">
                         Environmental Protection Agency. "Recycling Basics and Benefits," last modified November 15, 2023.<br>
                         Lockhite. "Infinitely Recyclable Materials: What Are They and Does It Matter?", accessed March 10, 2026.

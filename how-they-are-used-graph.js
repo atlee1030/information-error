@@ -6,7 +6,7 @@
     { name: "Glass", items: [{ n: "Glass bottle", d: 1.07 }, { n: "Window", d: 1.07 }], angle: -130, spread: 35, color: [118, 166, 148, 90] },
     { name: "Paper", items: [{ n: "Box", d: 1.1 }, { n: "Book", d: 1.05 }, { n: "Cardboard", d: 1.03 }, { n: "Newspaper", d: 1.05 }, { n: "Paper towel", d: 1.1 }], angle: -55, spread: 40, color: [140, 139, 136, 140] },
     { name: "Plastic", items: [{ n: "Nail", d: 1.24 }, { n: "Bottle", d: 1.18 }, { n: "Tray", d: 1.15 }, { n: "Polyester", d: 1.15 }, { n: "Plastic bag", d: 1.18 }, { n: "Car bumper", d: 1.24 }], angle: 15, spread: 45, color: [118, 166, 148, 140] },
-    { name: "Organic", items: [{ n: "Agriculture", d: 1.1 }, { n: "Landscaping", d: 1.04 }, { n: "Garden", d: 1.0 }, { n: "Brown food waste", d: 1.0 }, { n: "Soil improver", d: 1.01 }, { n: "Mulch", d: 1.04 }, { n: "Topsoil conditioner", d: 1.1 }], angle: 90, spread: 50, color: [168, 191, 84, 140] },
+    { name: "Organic", items: [{ n: "Agriculture", d: 1.1 }, { n: "Landscaping", d: 1.04 }, { n: "Garden", d: 1.0 }, { n: "Brown food waste", d: 1.0 }, { n: "Soil improver", d: 1.01 }, { n: "Mulch", d: 1.04 }, { n: "Topsoil conditioner", d: 1.1 }], angle: 90, spread: 50, color: [168, 191, 84, 140], offsetX: -6 },
     { name: "Metal", items: [{ n: "Aluminum can", d: 1.207 }, { n: "Car bumper", d: 1.166 }, { n: "Steel product", d: 1.147 }, { n: "Train track", d: 1.15 }, { n: "Car", d: 1.17 }, { n: "Bicycle frame", d: 1.2 }, { n: "Paperclip", d: 1.258 }], angle: 165, spread: 45, color: [19, 61, 71, 140] }
   ];
 
@@ -15,7 +15,59 @@
     let centerX = 0;
     let centerY = 0;
     let globalProgress = 0;
-    const GRAPH_SHIFT_Y = -24;
+    const GRAPH_SHIFT_X = Number(mount.dataset.graphShiftX || 0);
+    const GRAPH_SHIFT_Y = Number(mount.dataset.graphShiftY || -24);
+    const DESIGN_WIDTH = Number(mount.dataset.designWidth || 1400);
+    const DESIGN_HEIGHT = Number(mount.dataset.designHeight || 900);
+    const VISUAL_SCALE = Number(mount.dataset.visualScale || 0.88);
+    const GRAPH_SCALE_MAX = Number(mount.dataset.graphScaleMax || 1.0);
+    const TEXT_SCALE_MIN = Number(mount.dataset.textScaleMin || 0.68);
+    const TEXT_SCALE_MAX = Number(mount.dataset.textScaleMax || 1.04);
+    const CENTER_TEXT_SCALE_MIN = Number(mount.dataset.centerTextScaleMin || 0.52);
+    const CENTER_TEXT_SCALE_MAX = Number(mount.dataset.centerTextScaleMax || 1.02);
+    const CATEGORY_TEXT_BASE = Number(mount.dataset.categoryTextSize || 13.2);
+    const CATEGORY_LABEL_OFFSET = Number(mount.dataset.categoryLabelOffset || 18);
+    const ITEM_TEXT_BASE = Number(mount.dataset.itemTextSize || 11.6);
+    const ITEM_LABEL_OFFSET = Number(mount.dataset.itemLabelOffset || 6.5);
+    const RESPONSIVE_BREAKPOINT = Number(mount.dataset.responsiveBreakpoint || 1180);
+    const RESPONSIVE_MIN_FACTOR = Number(mount.dataset.responsiveMinFactor || 0.88);
+    const CENTER_SPREAD_BREAKPOINT = Number(mount.dataset.centerSpreadBreakpoint || 1180);
+    const CENTER_SPREAD_MAX = Number(mount.dataset.centerSpreadMax || 1.18);
+    let graphScale = 1;
+    let graphTextScale = 1;
+    let centerTextScale = 1;
+    let centerSpreadScale = 1;
+    let frameOffsetX = 0;
+    let frameOffsetY = 0;
+    const graphWrap = mount.parentElement;
+    let pointerX = -9999;
+    let pointerY = -9999;
+    let pointerActive = false;
+
+    function updatePointerPosition(clientX, clientY) {
+      const rect = mount.getBoundingClientRect();
+      pointerX = clientX - rect.left;
+      pointerY = clientY - rect.top;
+      pointerActive = true;
+    }
+
+    function clearPointerPosition() {
+      pointerX = -9999;
+      pointerY = -9999;
+      pointerActive = false;
+    }
+
+    mount.addEventListener("pointerenter", (event) => {
+      updatePointerPosition(event.clientX, event.clientY);
+    });
+
+    mount.addEventListener("pointermove", (event) => {
+      updatePointerPosition(event.clientX, event.clientY);
+    });
+
+    mount.addEventListener("pointerleave", () => {
+      clearPointerPosition();
+    });
 
     class Node {
       constructor(x, y, label, level) {
@@ -30,10 +82,13 @@
 
       update() {
         if (this.level === 0) return;
-        const mDist = p.dist(p.mouseX, p.mouseY, this.pos.x, this.pos.y);
-        if (mDist < 100) {
-          const push = p5.Vector.sub(this.pos, p.createVector(p.mouseX, p.mouseY));
-          push.setMag(p.map(mDist, 0, 100, 4, 0));
+        const hoverRadius = 100 * graphScale;
+        const hoverX = pointerActive ? pointerX : p.mouseX;
+        const hoverY = pointerActive ? pointerY : p.mouseY;
+        const mDist = p.dist(hoverX, hoverY, this.pos.x, this.pos.y);
+        if (mDist < hoverRadius) {
+          const push = p5.Vector.sub(this.pos, p.createVector(hoverX, hoverY));
+          push.setMag(p.map(mDist, 0, hoverRadius, 4 * graphScale, 0));
           this.pos.add(push);
         }
         const home = p5.Vector.sub(this.base, this.pos);
@@ -56,13 +111,15 @@
           p.rotate(isLeft ? textAng + p.PI : textAng);
 
           p.fill(40, alpha);
-          p.drawingContext.font = "300 15px Oxanium";
+          const categoryTextSize = CATEGORY_TEXT_BASE * centerTextScale;
+          p.textSize(categoryTextSize);
+          p.textStyle(p.NORMAL);
           if (isLeft) {
             p.textAlign(p.LEFT, p.CENTER);
-            p.text(this.label.toUpperCase(), 20, 0);
+            p.text(this.label.toUpperCase(), CATEGORY_LABEL_OFFSET * centerTextScale, 0);
           } else {
             p.textAlign(p.RIGHT, p.CENTER);
-            p.text(this.label.toUpperCase(), -20, 0);
+            p.text(this.label.toUpperCase(), -CATEGORY_LABEL_OFFSET * centerTextScale, 0);
           }
           p.pop();
           return;
@@ -79,16 +136,16 @@
           p.rotate(isLeft ? textAng + p.PI : textAng);
 
           p.fill(this.color[0], this.color[1], this.color[2], alpha * 0.6);
-          p.ellipse(0, 0, 3, 3);
+          p.ellipse(0, 0, 3 * graphScale, 3 * graphScale);
           p.fill(50, alpha);
-          p.textSize(11);
+          p.textSize(ITEM_TEXT_BASE * graphTextScale);
           p.textStyle(p.NORMAL);
           if (isLeft) {
             p.textAlign(p.RIGHT, p.CENTER);
-            p.text(this.label, -7, 0);
+            p.text(this.label, -ITEM_LABEL_OFFSET * graphTextScale, 0);
           } else {
             p.textAlign(p.LEFT, p.CENTER);
-            p.text(this.label, 7, 0);
+            p.text(this.label, ITEM_LABEL_OFFSET * graphTextScale, 0);
           }
           p.pop();
         }
@@ -97,19 +154,40 @@
 
     function rebuildLayout() {
       nodes = [];
-      centerX = p.width * 0.47;
-      centerY = (p.height * 0.5) + GRAPH_SHIFT_Y;
+      const baseResponsiveScale = Math.min(p.width / DESIGN_WIDTH, p.height / DESIGN_HEIGHT);
+      const widthResponsiveFactor = p.width < RESPONSIVE_BREAKPOINT
+        ? p.map(p.width, 900, RESPONSIVE_BREAKPOINT, RESPONSIVE_MIN_FACTOR, 1, true)
+        : 1;
+      centerSpreadScale = p.width < CENTER_SPREAD_BREAKPOINT
+        ? p.map(p.width, 900, CENTER_SPREAD_BREAKPOINT, CENTER_SPREAD_MAX, 1, true)
+        : 1;
+
+      graphScale = Math.min(
+        (baseResponsiveScale * VISUAL_SCALE * widthResponsiveFactor),
+        GRAPH_SCALE_MAX
+      );
+      graphTextScale = p.constrain(graphScale / VISUAL_SCALE, TEXT_SCALE_MIN, TEXT_SCALE_MAX);
+      centerTextScale = p.constrain(graphScale / VISUAL_SCALE, CENTER_TEXT_SCALE_MIN, CENTER_TEXT_SCALE_MAX);
+      frameOffsetX = (p.width - (DESIGN_WIDTH * graphScale)) * 0.5;
+      frameOffsetY = (p.height - (DESIGN_HEIGHT * graphScale)) * 0.5;
+      if (graphWrap) {
+        graphWrap.style.setProperty("--graph-ui-scale", graphTextScale.toFixed(4));
+      }
+
+      centerX = frameOffsetX + (DESIGN_WIDTH * 0.5 * graphScale) + (GRAPH_SHIFT_X * graphScale);
+      centerY = frameOffsetY + (DESIGN_HEIGHT * 0.52 * graphScale) + (GRAPH_SHIFT_Y * graphScale);
       globalProgress = 0;
 
       const root = new Node(centerX, centerY, "", 0);
       nodes.push(root);
 
-      const baseDist = Math.min(p.height * 0.42, p.width * 0.38);
+      const baseDist = DESIGN_HEIGHT * 0.43 * graphScale;
 
       graphData.forEach((category) => {
         const rad = p.radians(category.angle);
-        const catDist = p.height * 0.09;
-        const catX = centerX + p.cos(rad) * catDist;
+        const catDist = DESIGN_HEIGHT * 0.095 * graphScale * centerSpreadScale;
+        const branchOffsetX = (category.offsetX || 0) * graphScale;
+        const catX = centerX + p.cos(rad) * catDist + branchOffsetX;
         const catY = centerY + p.sin(rad) * catDist;
 
         const catNode = new Node(catX, catY, category.name, 1);
@@ -124,7 +202,7 @@
         category.items.forEach((item, i) => {
           const itemAngle = startAngle + (angleStep * i);
           const itemDist = baseDist * item.d;
-          const itemX = centerX + p.cos(itemAngle) * itemDist;
+          const itemX = centerX + p.cos(itemAngle) * itemDist + branchOffsetX;
           const itemY = centerY + p.sin(itemAngle) * itemDist;
 
           const itemNode = new Node(itemX, itemY, item.n, 2);
@@ -150,7 +228,7 @@
         globalProgress = p.lerp(globalProgress, 1, 0.05);
       }
 
-      p.strokeWeight(1.2);
+      p.strokeWeight(Math.max(0.9, 1.2 * graphScale));
       p.noFill();
 
       nodes.forEach((node) => {

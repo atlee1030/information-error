@@ -1,58 +1,143 @@
 let vocabulary = [
   "Fake News", "Distortion", "Bias", "Frame", "Agitation", "Media", "Public Opinion", "Anonymous", "Noise", "Stimulus",
   "Recycling 27%", "Disposal 73%", "Plastic 9.1%", "Infinite Loop", "Greenwashing", "Landfill", "Incineration", "Downcycling", "Sorting", "Mixed Waste", "Statistics Canada",
-  "Algorithm", "Echo Chamber", "Filter Bubble", "Post-Truth", "Clickbait", 
-  "Verification", "Polarization", "Microplastic", "Carbon Footprint", "Circular Economy", 
+  "Algorithm", "Echo Chamber", "Filter Bubble", "Post-Truth", "Clickbait",
+  "Verification", "Polarization", "Microplastic", "Carbon Footprint", "Circular Economy",
   "Zero Waste", "Sustainability", "90.9% Unrecycled", "Digital Trace", "Systemic Error"
 ];
 
 let words = [];
-const INITIAL_WORD_COUNT = 70; // 시작 시 단어 수
-const MAX_WORDS = 80;          // 화면에 유지될 최대 단어 수 (이 수치를 넘으면 삭제)
-const CONNECT_DIST = 260; 
+const INITIAL_WORD_COUNT = 56;
+const MAX_WORDS = 90;
+const MAX_SHARED_WORDS = 28;
+const CONNECT_DIST = 260;
 
-let isShrinking = false; 
-let shrinkTimer = 0; 
+let isShrinking = false;
+let shrinkTimer = 0;
+const sharedWordMap = new Map();
+
+function normalizeIssueTerm(term) {
+  return term.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function sharedTextSize(count) {
+  const responsiveScale = map(constrain(min(width, height), 480, 1600), 480, 1600, 0.82, 1.1);
+  const weighted = 17 + (Math.log2(max(1, count)) * 4.2);
+  return constrain(weighted * responsiveScale, 17, 38);
+}
+
+function wordSpacingRadius(word) {
+  return word.isShared ? map(word.getDisplaySize(), 17, 38, 64, 128, true) : 44;
+}
+
+function pruneWords() {
+  while (sharedWordMap.size > MAX_SHARED_WORDS) {
+    let removable = null;
+    sharedWordMap.forEach((word, key) => {
+      if (!removable || word.count < removable.word.count) {
+        removable = { key, word };
+      }
+    });
+    if (!removable) break;
+    words = words.filter((word) => word !== removable.word);
+    sharedWordMap.delete(removable.key);
+  }
+
+  while (words.length > MAX_WORDS) {
+    const firstNonSharedIndex = words.findIndex((word) => !word.isShared);
+    if (firstNonSharedIndex >= 0) {
+      words.splice(firstNonSharedIndex, 1);
+      continue;
+    }
+
+    const removableKey = sharedWordMap.keys().next().value;
+    if (!removableKey) break;
+    const removableWord = sharedWordMap.get(removableKey);
+    words = words.filter((word) => word !== removableWord);
+    sharedWordMap.delete(removableKey);
+  }
+}
+
+function syncSharedIssue(issue, options = {}) {
+  const key = issue.normalized_term || normalizeIssueTerm(issue.term || "");
+  if (!key) return null;
+
+  const existing = sharedWordMap.get(key);
+  if (existing) {
+    existing.str = issue.term;
+    existing.count = issue.count || existing.count || 1;
+    existing.bump();
+    return existing;
+  }
+
+  const spawnAtCenter = options.spawnAtCenter === true;
+  const x = spawnAtCenter ? width / 2 : random(width * 0.28, width * 0.72);
+  const y = spawnAtCenter ? height / 2 : random(height * 0.24, height * 0.78);
+  const freshWord = new Information(x, y, {
+    str: issue.term,
+    count: issue.count || 1,
+    isShared: true
+  });
+
+  if (spawnAtCenter) {
+    freshWord.vel = p5.Vector.random2D().mult(random(2, 5));
+  }
+
+  words.push(freshWord);
+  sharedWordMap.set(key, freshWord);
+  pruneWords();
+  return freshWord;
+}
+
+async function hydrateSharedIssues() {
+  if (!window.socialIssuesStore) return;
+  const issues = await window.socialIssuesStore.listIssues(MAX_SHARED_WORDS);
+  issues.forEach((issue) => {
+    syncSharedIssue(issue, { spawnAtCenter: true });
+  });
+}
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  textFont("Oxanium"); 
-  textSize(17);
+  textFont("Oxanium");
   textAlign(CENTER, CENTER);
-  
-  // 초기 단어들 생성
+
   for (let i = 0; i < INITIAL_WORD_COUNT; i++) {
     words.push(new Information(width / 2, height / 2));
   }
+
+  hydrateSharedIssues();
 }
 
-// 사용자가 새로운 단어를 입력할 때 호출되는 함수
-function addWordToSketch(newWord) {
-  // 1. 새로운 단어 객체 생성
-  let freshWord = new Information(width / 2, height / 2);
-  freshWord.str = newWord;
-  // 생성 시 사방으로 튀어나가는 초기 속도 부여
-  freshWord.vel = p5.Vector.random2D().mult(random(2, 5));
-  words.push(freshWord);
-  
-  // 2. ★ 과부하 방지: 최대 개수(80개)를 초과하면 가장 오래된 단어(배열의 첫 번째) 삭제
-  if (words.length > MAX_WORDS) {
-    words.shift();
+async function addWordToSketch(newWord) {
+  const cleaned = newWord.trim().replace(/\s+/g, " ");
+  if (!cleaned) return;
+
+  let savedIssue = {
+    term: cleaned,
+    normalized_term: normalizeIssueTerm(cleaned),
+    count: 1
+  };
+
+  if (window.socialIssuesStore) {
+    const result = await window.socialIssuesStore.submitIssue(cleaned);
+    if (result) savedIssue = result;
   }
+
+  syncSharedIssue(savedIssue, { spawnAtCenter: true });
 }
 
 function draw() {
-  background(225, 225, 222); 
+  background(225, 225, 222);
 
-  if (isShrinking) shrinkTimer += 0.015; 
+  if (isShrinking) shrinkTimer += 0.015;
 
-  // 네트워크 선 그리기
   for (let i = 0; i < words.length; i++) {
     for (let j = i + 1; j < words.length; j++) {
       let d = dist(words[i].pos.x, words[i].pos.y, words[j].pos.x, words[j].pos.y);
       if (d < CONNECT_DIST) {
-        let opacity = isShrinking ? map(shrinkTimer, 0, 0.5, 100, 0) : map(d, 0, CONNECT_DIST, 140, 0); 
-        stroke(120, 120, 120, max(0, opacity)); 
+        let opacity = isShrinking ? map(shrinkTimer, 0, 0.5, 100, 0) : map(d, 0, CONNECT_DIST, 140, 0);
+        stroke(120, 120, 120, max(0, opacity));
         strokeWeight(1);
         line(words[i].pos.x, words[i].pos.y, words[j].pos.x, words[j].pos.y);
       }
@@ -61,9 +146,9 @@ function draw() {
 
   for (let word of words) {
     if (isShrinking) {
-      word.shrink(shrinkTimer); 
+      word.shrink(shrinkTimer);
     } else {
-      word.applyBehaviors(words); 
+      word.applyBehaviors(words);
     }
     word.update();
     word.display();
@@ -84,90 +169,97 @@ function windowResized() {
 }
 
 class Information {
-  constructor(x, y) {
+  constructor(x, y, options = {}) {
     this.pos = createVector(x, y);
-    this.vel = createVector(0, 0); 
+    this.vel = createVector(0, 0);
     this.acc = createVector(0, 0);
-    this.str = random(vocabulary);
-    this.maxSpeed = 3.5; 
+    this.str = options.str || random(vocabulary);
+    this.count = options.count || 1;
+    this.isShared = Boolean(options.isShared);
+    this.maxSpeed = 3.5;
     this.noiseOffset = random(1000);
-    this.alpha = 255; 
+    this.alpha = 255;
+    this.highlightFrames = this.isShared ? 90 : 0;
+  }
+
+  bump() {
+    this.highlightFrames = 90;
+  }
+
+  getDisplaySize() {
+    return this.isShared ? sharedTextSize(this.count) : 17;
   }
 
   shrink(t) {
     let center = createVector(width / 2, height / 2);
     let dir = p5.Vector.sub(center, this.pos);
-    let timeFactor = pow(t, 3); 
-    let forceMag = timeFactor * 45; 
-    dir.setMag(forceMag); 
+    let timeFactor = pow(t, 3);
+    let forceMag = timeFactor * 45;
+    dir.setMag(forceMag);
     this.acc.add(dir);
-    this.maxSpeed = 25; 
+    this.maxSpeed = 25;
     this.alpha = map(t, 0.2, 0.8, 255, 0);
   }
 
   applyBehaviors(allWords) {
-    // 1. 자유 유영 (원본 유지)
     let n = noise(this.noiseOffset + frameCount * 0.004);
     let flow = p5.Vector.fromAngle(n * TWO_PI * 2);
-    flow.x *= 3.0; 
-    flow.mult(0.25); 
+    flow.x *= 3.0;
+    flow.mult(0.25);
     this.acc.add(flow);
 
     let center = createVector(width / 2, height / 2);
     let target = p5.Vector.sub(center, this.pos);
     let d = target.mag();
-    
-    // 2. 고무줄 탄성 (원본 유지)
+
     let elasticTarget = target.copy();
-    elasticTarget.x *= 0.45; 
-    elasticTarget.y *= 1.0; 
-    let strength = map(d, 0, width / 2, 0.02, 0.8); 
+    elasticTarget.x *= 0.45;
+    elasticTarget.y *= 1.0;
+    let strength = map(d, 0, width / 2, 0.02, 0.8);
     if (d > width * 0.4) {
-      strength = map(d, width * 0.4, width * 0.5, 0.5, 3.5); 
+      strength = map(d, width * 0.4, width * 0.5, 0.5, 3.5);
     }
     elasticTarget.setMag(this.maxSpeed);
     let steer = p5.Vector.sub(elasticTarget, this.vel);
-    steer.limit(strength); 
+    steer.limit(strength);
     this.acc.add(steer);
 
-    // 3. 단어끼리 밀어내기 (원본 유지)
     for (let other of allWords) {
+      if (other === this) continue;
       let dOther = dist(this.pos.x, this.pos.y, other.pos.x, other.pos.y);
-      if (dOther > 0 && dOther < 85) { 
+      const personalSpace = wordSpacingRadius(this) + wordSpacingRadius(other);
+      if (dOther > 0 && dOther < personalSpace) {
         let diff = p5.Vector.sub(this.pos, other.pos);
         diff.normalize();
-        diff.div(dOther);
-        diff.mult(0.8); 
+        diff.div(max(dOther, 1));
+        diff.mult(this.isShared || other.isShared ? 1.4 : 0.8);
         this.acc.add(diff);
       }
     }
 
-    // 4. 마우스 회피 (원본 유지)
     if (dist(this.pos.x, this.pos.y, mouseX, mouseY) < 240) {
       let repulsion = p5.Vector.sub(this.pos, createVector(mouseX, mouseY));
       repulsion.setMag(this.maxSpeed * 2.2);
       let mSteer = p5.Vector.sub(repulsion, this.vel);
-      mSteer.limit(0.8); 
+      mSteer.limit(0.8);
       this.acc.add(mSteer);
     }
 
-    // ★ 5. 부드러운 직사각형 방어막 (쿠션 로직 포함)
     if (!isShrinking) {
-      let boxW = 260; 
-      let boxH = 90;  
-      let buffer = 40; 
-      
+      let boxW = 260;
+      let boxH = 90;
+      let buffer = 40;
+
       if (this.pos.x > center.x - (boxW + buffer) && this.pos.x < center.x + (boxW + buffer) &&
           this.pos.y > center.y - (boxH + buffer) && this.pos.y < center.y + (boxH + buffer)) {
-        
+
         let push = p5.Vector.sub(this.pos, center);
-        
-        let distInside = 1.0; 
-        if (abs(push.x) > boxW || abs(push.y) > boxH) distInside = 0.5; 
+        let distInside = 1.0;
+        if (abs(push.x) > boxW || abs(push.y) > boxH) distInside = 0.5;
 
         push.setMag(this.maxSpeed * 4.0);
         let pushSteer = p5.Vector.sub(push, this.vel);
-        pushSteer.limit(distInside); 
+        pushSteer.limit(distInside);
         this.acc.add(pushSteer);
       }
     }
@@ -179,7 +271,9 @@ class Information {
     this.pos.add(this.vel);
     this.acc.mult(0);
     let friction = isShrinking ? 0.94 : 0.985;
-    this.vel.mult(friction); 
+    this.vel.mult(friction);
+
+    this.highlightFrames = max(0, this.highlightFrames - 1);
 
     if (!isShrinking) {
       this.pos.y = constrain(this.pos.y, 180, height - 40);
@@ -189,7 +283,12 @@ class Information {
 
   display() {
     noStroke();
-    fill(0, max(0, this.alpha)); 
+    const size = this.getDisplaySize();
+    textSize(size);
+    fill(0, max(0, this.alpha));
+    if (this.isShared && this.highlightFrames > 0) {
+      fill(0, 0, 0, max(180, this.alpha));
+    }
     text(this.str, this.pos.x, this.pos.y);
   }
 }

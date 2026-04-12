@@ -13,13 +13,13 @@
     <style>
         :root {
             --bg: rgb(218, 210, 199);
-            --frame-pad: 8px;
-            --frame-left-column: 250px;
-            --frame-right-column: 230px;
+            --frame-pad: 0px;
+            --frame-left-column: 0px;
+            --frame-right-column: 0px;
             --frame-top-row: 58px;
-            --frame-bottom-row: 56px;
-            --stage-ratio: 1.52;
-            --stage-safety: 12px;
+            --frame-bottom-row: 40px;
+            --stage-ratio: 1.5556;
+            --stage-safety: 0px;
         }
 
         * {
@@ -29,6 +29,7 @@
         html,
         body {
             margin: 0;
+            overflow-x: hidden;
             min-height: 100vh;
         }
 
@@ -45,14 +46,14 @@
             left: 0;
             display: flex;
             justify-content: space-between;
-            padding: 40px;
+            padding: clamp(14px, 2.4vw, 40px);
             box-sizing: border-box;
             z-index: 120;
             pointer-events: none;
         }
 
         .logo {
-            font-size: 36px;
+            font-size: clamp(18px, 2.1vw, 36px);
             color: black;
             text-decoration: none;
             pointer-events: auto;
@@ -60,12 +61,12 @@
 
         nav {
             display: flex;
-            gap: 40px;
+            gap: clamp(14px, 2vw, 40px);
             pointer-events: auto;
         }
 
         nav a {
-            font-size: 24px;
+            font-size: clamp(15px, 1.4vw, 24px);
             color: black;
             text-decoration: none;
             transition: opacity 0.3s;
@@ -77,6 +78,35 @@
 
         .active {
             border-bottom: 2px solid black;
+        }
+
+
+        @media (max-width: 900px) {
+            header {
+                padding: 18px 16px;
+            }
+
+            .logo {
+                font-size: 22px;
+            }
+
+            nav {
+                gap: 18px;
+            }
+
+            nav a {
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .logo {
+                font-size: 18px;
+            }
+
+            nav a {
+                font-size: 15px;
+            }
         }
 
         .page {
@@ -101,7 +131,7 @@
                 calc(100vh - (var(--frame-top-row) + var(--frame-bottom-row) + (var(--frame-pad) * 2) + (var(--stage-safety) * 2))),
                 calc((100vw - (var(--frame-left-column) + var(--frame-right-column) + (var(--frame-pad) * 2) + (var(--stage-safety) * 2))) / var(--stage-ratio))
             );
-            min-height: 620px;
+            min-height: 0;
             overflow: hidden;
         }
 
@@ -118,8 +148,6 @@
 
         @media (max-width: 1180px) {
             :root {
-                --frame-left-column: 120px;
-                --frame-right-column: 110px;
                 --frame-bottom-row: 72px;
             }
         }
@@ -157,7 +185,21 @@
 
     <main class="page">
         <section class="stage-wrap" aria-label="Project 2 landing graph">
-            <div id="usage-graph-canvas"></div>
+            <div
+                id="usage-graph-canvas"
+                data-design-width="1400"
+                data-design-height="900"
+                data-visual-scale="1.08"
+                data-graph-scale-max="1.35"
+                data-graph-shift-x="0"
+                data-graph-shift-y="-34"
+                data-text-scale-min="0.76"
+                data-text-scale-max="1.06"
+                data-center-text-scale-min="0.44"
+                data-center-text-scale-max="1.02"
+                data-category-text-size="14"
+                data-item-text-size="12"
+            ></div>
         </section>
     </main>
 </body>

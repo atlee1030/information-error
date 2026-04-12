@@ -45,6 +45,7 @@
             margin: 0; 
             padding: 0; 
             min-height: 100vh;
+            overflow-x: hidden;
             background-color: rgb(205, 194, 183);
             background-image: url("image/project1_background2.jpg");
             background-repeat: no-repeat;
@@ -67,14 +68,14 @@
             left: 0;
             display: flex;
             justify-content: space-between;
-            padding: 40px;
+            padding: clamp(14px, 2.4vw, 40px);
             box-sizing: border-box;
             z-index: 120;
             pointer-events: none;
         }
 
         .logo { 
-            font-size: 36px; 
+            font-size: clamp(18px, 2.1vw, 36px); 
             color: black; 
             text-decoration: none; 
             font-family: "oxanium", sans-serif;
@@ -83,10 +84,10 @@
             pointer-events: auto;
         }
 
-        nav { display: flex; gap: 40px; pointer-events: auto; }
+        nav { display: flex; gap: clamp(14px, 2vw, 40px); pointer-events: auto; }
 
         nav a { 
-            font-size: 24px; 
+            font-size: clamp(15px, 1.4vw, 24px); 
             color: black; 
             text-decoration: none; 
             font-family: "oxanium", sans-serif;
@@ -104,9 +105,58 @@
             border-bottom: 2px solid black;
         }
 
+        @media (max-width: 900px) {
+            header {
+                padding: 18px 16px;
+            }
+
+            .logo {
+                font-size: 22px;
+            }
+
+            nav {
+                gap: 18px;
+            }
+
+            nav a {
+                font-size: 18px;
+            }
+
+            main {
+                padding-top: 66px;
+            }
+
+            .peace-stack {
+                --pair-shift-x: -2px;
+                --pair-shift-y: -18px;
+                --pair-gap: 4px;
+                --glyph-size: clamp(250px, 68vw, 430px);
+                --truth-overlay-scale: 1.02;
+                --truth-top-offset-x: -6px;
+                --truth-top-offset-y: -8px;
+                --truth-bottom-offset-y: -10px;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .logo {
+                font-size: 18px;
+            }
+
+            nav a {
+                font-size: 15px;
+            }
+
+            .peace-stack {
+                --glyph-size: clamp(210px, 72vw, 360px);
+                --pair-gap: -4px;
+                --pair-shift-y: -8px;
+            }
+        }
+
         main {
             min-height: 100vh;
-            padding-top: 92px;
+            padding-top: clamp(64px, 8vw, 92px);
             display: grid;
             place-items: center;
         }
