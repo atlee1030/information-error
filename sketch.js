@@ -115,7 +115,11 @@ async function hydrateSharedIssues() {
 }
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  const canvas = createCanvas(windowWidth, windowHeight);
+  const mount = document.getElementById("hero-canvas");
+  if (mount) {
+    canvas.parent(mount);
+  }
   textFont("Oxanium");
   textAlign(CENTER, CENTER);
 
