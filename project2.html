@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="panel-nav.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script src="panel-nav.js" defer></script>
-    <script src="how-they-are-used-graph.js" defer></script>
+    <script src="how-they-are-used-graph.js?v=20260413-0001" defer></script>
     <style>
         :root {
             --bg: rgb(218, 210, 199);
@@ -164,12 +164,16 @@
 
             .page {
                 padding: calc(var(--frame-top-row) + var(--stage-safety)) 8px 96px;
+                align-items: center;
             }
 
             .stage-wrap {
-                width: 100%;
-                height: min(58vh, 520px);
-                min-height: 360px;
+                width: min(100%, 430px);
+                height: auto;
+                aspect-ratio: 1400 / 1240;
+                min-height: 0;
+                margin-inline: auto;
+                margin-block: auto;
             }
         }
     </style>
@@ -195,25 +199,25 @@
                 data-graph-shift-y="-34"
                 data-text-scale-min="0.76"
                 data-text-scale-max="1.06"
-                data-center-text-scale-min="0.44"
-                data-center-text-scale-max="1.02"
-                data-category-text-size="14"
+                data-center-text-scale-min="0.48"
+                data-center-text-scale-max="1.08"
+                data-category-text-size="14.8"
                 data-item-text-size="12"
                 data-responsive-breakpoint="1720"
                 data-responsive-min-factor="0.7"
                 data-mobile-breakpoint="900"
-                data-mobile-visual-scale="0.68"
-                data-mobile-graph-scale-max="0.72"
+                data-mobile-visual-scale="1.28"
+                data-mobile-graph-scale-max="1.34"
                 data-mobile-graph-shift-x="0"
-                data-mobile-graph-shift-y="-8"
-                data-mobile-text-scale-min="0.56"
-                data-mobile-text-scale-max="0.82"
-                data-mobile-center-text-scale-min="0.26"
-                data-mobile-center-text-scale-max="0.54"
-                data-mobile-category-text-size="10.2"
-                data-mobile-item-text-size="9.4"
-                data-mobile-responsive-min-factor="0.62"
-                data-mobile-center-spread-max="1.34"
+                data-mobile-graph-shift-y="-18"
+                data-mobile-text-scale-min="0.46"
+                data-mobile-text-scale-max="0.7"
+                data-mobile-center-text-scale-min="0.48"
+                data-mobile-center-text-scale-max="0.74"
+                data-mobile-category-text-size="11.2"
+                data-mobile-item-text-size="9.2"
+                data-mobile-responsive-min-factor="0.82"
+                data-mobile-center-spread-max="1.56"
             ></div>
         </section>
     </main>

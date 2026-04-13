@@ -5,8 +5,8 @@
   const graphData = [
     { name: "Glass", items: [{ n: "Glass bottle", d: 1.07 }, { n: "Window", d: 1.07 }], angle: -130, spread: 35, color: [118, 166, 148, 90] },
     { name: "Paper", items: [{ n: "Box", d: 1.1 }, { n: "Book", d: 1.05 }, { n: "Cardboard", d: 1.03 }, { n: "Newspaper", d: 1.05 }, { n: "Paper towel", d: 1.1 }], angle: -55, spread: 40, color: [140, 139, 136, 140] },
-    { name: "Plastic", items: [{ n: "Nail", d: 1.24 }, { n: "Bottle", d: 1.18 }, { n: "Tray", d: 1.15 }, { n: "Polyester", d: 1.15 }, { n: "Plastic bag", d: 1.18 }, { n: "Car bumper", d: 1.24 }], angle: 15, spread: 45, color: [118, 166, 148, 140] },
-    { name: "Organic", items: [{ n: "Agriculture", d: 1.1 }, { n: "Landscaping", d: 1.04 }, { n: "Garden", d: 1.0 }, { n: "Brown food waste", d: 1.0 }, { n: "Soil improver", d: 1.01 }, { n: "Mulch", d: 1.04 }, { n: "Topsoil conditioner", d: 1.1 }], angle: 90, spread: 50, color: [168, 191, 84, 140], offsetX: -6 },
+    { name: "Plastic", items: [{ n: "Nail", d: 1.24 }, { n: "Bottle", d: 1.18 }, { n: "Tray", d: 1.15 }, { n: "Polyester", d: 1.15 }, { n: "Plastic bag", d: 1.18 }, { n: "Car bumper", d: 1.24 }], angle: 15, spread: 45, color: [118, 166, 148, 140], offsetX: 0, offsetY: 3 },
+    { name: "Organic", items: [{ n: "Agriculture", d: 1.1 }, { n: "Landscaping", d: 1.04 }, { n: "Garden", d: 1.0 }, { n: "Brown food waste", d: 1.0 }, { n: "Soil improver", d: 1.01 }, { n: "Mulch", d: 1.04 }, { n: "Topsoil conditioner", d: 1.1 }], angle: 90, spread: 50, color: [168, 191, 84, 140], offsetX: -10.5, offsetY: 14 },
     { name: "Metal", items: [{ n: "Aluminum can", d: 1.207 }, { n: "Car bumper", d: 1.166 }, { n: "Steel product", d: 1.147 }, { n: "Train track", d: 1.15 }, { n: "Car", d: 1.17 }, { n: "Bicycle frame", d: 1.2 }, { n: "Paperclip", d: 1.258 }], angle: 165, spread: 45, color: [19, 61, 71, 140] }
   ];
 
@@ -31,6 +31,11 @@
     const ITEM_LABEL_OFFSET = Number(mount.dataset.itemLabelOffset || 6.5);
     const RESPONSIVE_BREAKPOINT = Number(mount.dataset.responsiveBreakpoint || 1180);
     const RESPONSIVE_MIN_FACTOR = Number(mount.dataset.responsiveMinFactor || 0.88);
+    const TEXT_RESPONSIVE_BREAKPOINT = Number(mount.dataset.textResponsiveBreakpoint || RESPONSIVE_BREAKPOINT);
+    const TEXT_RESPONSIVE_MIN_FACTOR = Number(mount.dataset.textResponsiveMinFactor || 1);
+    const CENTER_TEXT_RESPONSIVE_MIN_FACTOR = Number(mount.dataset.centerTextResponsiveMinFactor || TEXT_RESPONSIVE_MIN_FACTOR);
+    const TEXT_RESPONSIVE_CURVE = Number(mount.dataset.textResponsiveCurve || 1);
+    const CENTER_TEXT_RESPONSIVE_CURVE = Number(mount.dataset.centerTextResponsiveCurve || TEXT_RESPONSIVE_CURVE);
     const CENTER_SPREAD_BREAKPOINT = Number(mount.dataset.centerSpreadBreakpoint || 1180);
     const CENTER_SPREAD_MAX = Number(mount.dataset.centerSpreadMax || 1.18);
     const MOBILE_BREAKPOINT = Number(mount.dataset.mobileBreakpoint || 900);
@@ -44,6 +49,10 @@
     const MOBILE_CENTER_TEXT_SCALE_MAX = Number(mount.dataset.mobileCenterTextScaleMax || CENTER_TEXT_SCALE_MAX);
     const MOBILE_CATEGORY_TEXT_BASE = Number(mount.dataset.mobileCategoryTextSize || CATEGORY_TEXT_BASE);
     const MOBILE_ITEM_TEXT_BASE = Number(mount.dataset.mobileItemTextSize || ITEM_TEXT_BASE);
+    const CATEGORY_TEXT_MULTIPLIER = Number(mount.dataset.categoryTextMultiplier || 1);
+    const ITEM_TEXT_MULTIPLIER = Number(mount.dataset.itemTextMultiplier || 1);
+    const MOBILE_CATEGORY_TEXT_MULTIPLIER = Number(mount.dataset.mobileCategoryTextMultiplier || CATEGORY_TEXT_MULTIPLIER);
+    const MOBILE_ITEM_TEXT_MULTIPLIER = Number(mount.dataset.mobileItemTextMultiplier || ITEM_TEXT_MULTIPLIER);
     const MOBILE_RESPONSIVE_MIN_FACTOR = Number(mount.dataset.mobileResponsiveMinFactor || RESPONSIVE_MIN_FACTOR);
     const MOBILE_CENTER_SPREAD_MAX = Number(mount.dataset.mobileCenterSpreadMax || CENTER_SPREAD_MAX);
     let graphScale = 1;
@@ -56,6 +65,8 @@
     let activeGraphShiftY = GRAPH_SHIFT_Y;
     let activeCategoryTextBase = CATEGORY_TEXT_BASE;
     let activeItemTextBase = ITEM_TEXT_BASE;
+    let activeCategoryTextMultiplier = CATEGORY_TEXT_MULTIPLIER;
+    let activeItemTextMultiplier = ITEM_TEXT_MULTIPLIER;
     const graphWrap = mount.parentElement;
     let pointerX = -9999;
     let pointerY = -9999;
@@ -127,8 +138,8 @@
           const isLeft = p.cos(textAng) < -0.01;
           p.rotate(isLeft ? textAng + p.PI : textAng);
 
-          p.fill(40, alpha);
-          const categoryTextSize = activeCategoryTextBase * centerTextScale;
+          p.fill(58, alpha * 0.92);
+          const categoryTextSize = activeCategoryTextBase * centerTextScale * activeCategoryTextMultiplier;
           p.textSize(categoryTextSize);
           p.textStyle(p.NORMAL);
           if (isLeft) {
@@ -154,8 +165,8 @@
 
           p.fill(this.color[0], this.color[1], this.color[2], alpha * 0.6);
           p.ellipse(0, 0, 3 * graphScale, 3 * graphScale);
-          p.fill(50, alpha);
-          p.textSize(activeItemTextBase * graphTextScale);
+          p.fill(64, alpha * 0.9);
+          p.textSize(activeItemTextBase * graphTextScale * activeItemTextMultiplier);
           p.textStyle(p.NORMAL);
           if (isLeft) {
             p.textAlign(p.RIGHT, p.CENTER);
@@ -171,7 +182,8 @@
 
     function rebuildLayout() {
       nodes = [];
-      const isMobileLayout = p.width <= MOBILE_BREAKPOINT;
+      const viewportWidth = window.innerWidth || document.documentElement.clientWidth || p.width;
+      const isMobileLayout = viewportWidth <= MOBILE_BREAKPOINT;
       const activeVisualScale = isMobileLayout ? MOBILE_VISUAL_SCALE : VISUAL_SCALE;
       const activeGraphScaleMax = isMobileLayout ? MOBILE_GRAPH_SCALE_MAX : GRAPH_SCALE_MAX;
       const activeTextScaleMin = isMobileLayout ? MOBILE_TEXT_SCALE_MIN : TEXT_SCALE_MIN;
@@ -184,10 +196,21 @@
       activeGraphShiftY = isMobileLayout ? MOBILE_GRAPH_SHIFT_Y : GRAPH_SHIFT_Y;
       activeCategoryTextBase = isMobileLayout ? MOBILE_CATEGORY_TEXT_BASE : CATEGORY_TEXT_BASE;
       activeItemTextBase = isMobileLayout ? MOBILE_ITEM_TEXT_BASE : ITEM_TEXT_BASE;
+      activeCategoryTextMultiplier = isMobileLayout ? MOBILE_CATEGORY_TEXT_MULTIPLIER : CATEGORY_TEXT_MULTIPLIER;
+      activeItemTextMultiplier = isMobileLayout ? MOBILE_ITEM_TEXT_MULTIPLIER : ITEM_TEXT_MULTIPLIER;
 
       const baseResponsiveScale = Math.min(p.width / DESIGN_WIDTH, p.height / DESIGN_HEIGHT);
       const widthResponsiveFactor = p.width < RESPONSIVE_BREAKPOINT
         ? p.map(p.width, 900, RESPONSIVE_BREAKPOINT, activeResponsiveMinFactor, 1, true)
+        : 1;
+      const textResponsiveT = !isMobileLayout
+        ? p.constrain((viewportWidth - 900) / (TEXT_RESPONSIVE_BREAKPOINT - 900), 0, 1)
+        : 1;
+      const textResponsiveFactor = !isMobileLayout && viewportWidth < TEXT_RESPONSIVE_BREAKPOINT
+        ? p.lerp(TEXT_RESPONSIVE_MIN_FACTOR, 1, Math.pow(textResponsiveT, TEXT_RESPONSIVE_CURVE))
+        : 1;
+      const centerTextResponsiveFactor = !isMobileLayout && viewportWidth < TEXT_RESPONSIVE_BREAKPOINT
+        ? p.lerp(CENTER_TEXT_RESPONSIVE_MIN_FACTOR, 1, Math.pow(textResponsiveT, CENTER_TEXT_RESPONSIVE_CURVE))
         : 1;
       centerSpreadScale = p.width < CENTER_SPREAD_BREAKPOINT
         ? p.map(p.width, 900, CENTER_SPREAD_BREAKPOINT, activeCenterSpreadMax, 1, true)
@@ -197,8 +220,16 @@
         (baseResponsiveScale * activeVisualScale * widthResponsiveFactor),
         activeGraphScaleMax
       );
-      graphTextScale = p.constrain(graphScale / activeVisualScale, activeTextScaleMin, activeTextScaleMax);
-      centerTextScale = p.constrain(graphScale / activeVisualScale, activeCenterTextScaleMin, activeCenterTextScaleMax);
+      graphTextScale = p.constrain(
+        p.constrain(graphScale / activeVisualScale, activeTextScaleMin, activeTextScaleMax) * textResponsiveFactor,
+        activeTextScaleMin * textResponsiveFactor,
+        activeTextScaleMax
+      );
+      centerTextScale = p.constrain(
+        p.constrain(graphScale / activeVisualScale, activeCenterTextScaleMin, activeCenterTextScaleMax) * centerTextResponsiveFactor,
+        activeCenterTextScaleMin * centerTextResponsiveFactor,
+        activeCenterTextScaleMax
+      );
       frameOffsetX = (p.width - (DESIGN_WIDTH * graphScale)) * 0.5;
       frameOffsetY = (p.height - (DESIGN_HEIGHT * graphScale)) * 0.5;
       if (graphWrap) {
@@ -218,8 +249,9 @@
         const rad = p.radians(category.angle);
         const catDist = DESIGN_HEIGHT * 0.095 * graphScale * centerSpreadScale;
         const branchOffsetX = (category.offsetX || 0) * graphScale;
+        const branchOffsetY = (category.offsetY || 0) * graphScale;
         const catX = centerX + p.cos(rad) * catDist + branchOffsetX;
-        const catY = centerY + p.sin(rad) * catDist;
+        const catY = centerY + p.sin(rad) * catDist + branchOffsetY;
 
         const catNode = new Node(catX, catY, category.name, 1);
         catNode.parent = root;
@@ -234,7 +266,7 @@
           const itemAngle = startAngle + (angleStep * i);
           const itemDist = baseDist * item.d;
           const itemX = centerX + p.cos(itemAngle) * itemDist + branchOffsetX;
-          const itemY = centerY + p.sin(itemAngle) * itemDist;
+          const itemY = centerY + p.sin(itemAngle) * itemDist + branchOffsetY;
 
           const itemNode = new Node(itemX, itemY, item.n, 2);
           itemNode.parent = catNode;

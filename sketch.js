@@ -11,6 +11,8 @@ const INITIAL_WORD_COUNT = 56;
 const MAX_WORDS = 90;
 const MAX_SHARED_WORDS = 28;
 const CONNECT_DIST = 260;
+const SHARED_WORD_GRACE_MS = 7 * 24 * 60 * 60 * 1000;
+const SHARED_WORD_DECAY_MS = 7 * 24 * 60 * 60 * 1000;
 
 let isShrinking = false;
 let shrinkTimer = 0;
@@ -24,6 +26,19 @@ function sharedTextSize(count) {
   const responsiveScale = map(constrain(min(width, height), 480, 1600), 480, 1600, 0.82, 1.1);
   const weighted = 17 + (Math.log2(max(1, count)) * 4.2);
   return constrain(weighted * responsiveScale, 17, 38);
+}
+
+function getIssueActivityScale(updatedAt) {
+  if (!updatedAt) return 1;
+
+  const lastUpdated = new Date(updatedAt).getTime();
+  if (!Number.isFinite(lastUpdated)) return 1;
+
+  const elapsed = Date.now() - lastUpdated;
+  if (elapsed <= SHARED_WORD_GRACE_MS) return 1;
+  if (elapsed >= SHARED_WORD_GRACE_MS + SHARED_WORD_DECAY_MS) return 0;
+
+  return 1 - ((elapsed - SHARED_WORD_GRACE_MS) / SHARED_WORD_DECAY_MS);
 }
 
 function wordSpacingRadius(word) {
@@ -66,6 +81,7 @@ function syncSharedIssue(issue, options = {}) {
   if (existing) {
     existing.str = issue.term;
     existing.count = issue.count || existing.count || 1;
+    existing.updatedAt = issue.updated_at || existing.updatedAt || new Date().toISOString();
     existing.bump();
     return existing;
   }
@@ -76,7 +92,8 @@ function syncSharedIssue(issue, options = {}) {
   const freshWord = new Information(x, y, {
     str: issue.term,
     count: issue.count || 1,
-    isShared: true
+    isShared: true,
+    updatedAt: issue.updated_at || new Date().toISOString()
   });
 
   if (spawnAtCenter) {
@@ -176,6 +193,7 @@ class Information {
     this.str = options.str || random(vocabulary);
     this.count = options.count || 1;
     this.isShared = Boolean(options.isShared);
+    this.updatedAt = options.updatedAt || null;
     this.maxSpeed = 3.5;
     this.noiseOffset = random(1000);
     this.alpha = 255;
@@ -184,10 +202,15 @@ class Information {
 
   bump() {
     this.highlightFrames = 90;
+    this.updatedAt = new Date().toISOString();
   }
 
   getDisplaySize() {
-    return this.isShared ? sharedTextSize(this.count) : 17;
+    if (!this.isShared) return 17;
+
+    const boostedSize = sharedTextSize(this.count);
+    const activityScale = getIssueActivityScale(this.updatedAt);
+    return lerp(17, boostedSize, activityScale);
   }
 
   shrink(t) {
