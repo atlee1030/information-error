@@ -6,7 +6,7 @@
     { name: "Glass", items: [{ n: "Glass bottle", d: 1.07 }, { n: "Window", d: 1.07 }], angle: -130, spread: 35, color: [118, 166, 148, 90] },
     { name: "Paper", items: [{ n: "Box", d: 1.1 }, { n: "Book", d: 1.05 }, { n: "Cardboard", d: 1.03 }, { n: "Newspaper", d: 1.05 }, { n: "Paper towel", d: 1.1 }], angle: -55, spread: 40, color: [140, 139, 136, 140] },
     { name: "Plastic", items: [{ n: "Nail", d: 1.24 }, { n: "Bottle", d: 1.18 }, { n: "Tray", d: 1.15 }, { n: "Polyester", d: 1.15 }, { n: "Plastic bag", d: 1.18 }, { n: "Car bumper", d: 1.24 }], angle: 15, spread: 45, color: [118, 166, 148, 140], offsetX: 0, offsetY: 3 },
-    { name: "Organic", items: [{ n: "Agriculture", d: 1.1 }, { n: "Landscaping", d: 1.04 }, { n: "Garden", d: 1.0 }, { n: "Brown food waste", d: 1.0 }, { n: "Soil improver", d: 1.01 }, { n: "Mulch", d: 1.04 }, { n: "Topsoil conditioner", d: 1.1 }], angle: 90, spread: 50, color: [168, 191, 84, 140], offsetX: -10.5, offsetY: 14 },
+    { name: "Organic", items: [{ n: "Agriculture", d: 1.1 }, { n: "Landscaping", d: 1.04 }, { n: "Garden", d: 1.0 }, { n: "Brown food waste", d: 1.0 }, { n: "Soil improver", d: 1.01 }, { n: "Mulch", d: 1.04 }, { n: "Topsoil conditioner", d: 1.1 }], angle: 90, spread: 50, color: [168, 191, 84, 140], offsetX: -9.5, offsetY: 14 },
     { name: "Metal", items: [{ n: "Aluminum can", d: 1.207 }, { n: "Car bumper", d: 1.166 }, { n: "Steel product", d: 1.147 }, { n: "Train track", d: 1.15 }, { n: "Car", d: 1.17 }, { n: "Bicycle frame", d: 1.2 }, { n: "Paperclip", d: 1.258 }], angle: 165, spread: 45, color: [19, 61, 71, 140] }
   ];
 
