@@ -246,6 +246,23 @@
             display: none;
         }
 
+        .poster-stage {
+            position: absolute;
+            inset: 50% auto auto 50%;
+            width: min(64vw, 840px);
+            transform: translate(-52%, -54%) scale(0.96);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 6;
+            transition: opacity 220ms ease, transform 260ms ease;
+        }
+
+        .poster-stage img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
         .truth-canvas {
             position: absolute;
             inset: 0;
@@ -262,6 +279,11 @@
             filter: blur(0);
         }
 
+        body.has-poster .poster-stage {
+            opacity: 1;
+            transform: translate(-52%, -54%) scale(1);
+        }
+
         body.is-glitching .truth-canvas {
             animation: truth-glitch 420ms steps(2, end);
         }
@@ -276,6 +298,10 @@
 
         body.is-glitching .peace-glyph::after {
             animation: glitch-layer-2 80ms steps(2, end) 5;
+        }
+
+        body.is-glitching .poster-stage {
+            animation: poster-glitch 320ms steps(2, end);
         }
 
         @keyframes truth-glitch {
@@ -309,6 +335,25 @@
             74% { opacity: 0.35; clip-path: inset(42% 0 30% 0); }
         }
 
+        @keyframes poster-glitch {
+            0% { transform: translate(-52%, -54%) scale(0.985); opacity: 0.35; }
+            35% { transform: translate(calc(-52% - 4px), calc(-54% + 2px)) scale(1.005); opacity: 0.82; }
+            70% { transform: translate(calc(-52% + 3px), calc(-54% - 2px)) scale(0.995); opacity: 1; }
+            100% { transform: translate(-52%, -54%) scale(1); opacity: 1; }
+        }
+
+        @media (max-width: 900px) {
+            .poster-stage {
+                width: min(82vw, 560px);
+            }
+        }
+
+        @media (max-width: 560px) {
+            .poster-stage {
+                width: min(88vw, 460px);
+            }
+        }
+
     </style>
 </head>
 <body data-panel-page="" data-panel-nav="off">
@@ -327,6 +372,9 @@
             <canvas class="truth-canvas" aria-hidden="true"></canvas>
             <img class="truth-source truth-source-top" src="image/peace_top.png" alt="">
             <img class="truth-source truth-source-bottom" src="image/peace_bottom.png" alt="">
+            <div class="poster-stage" aria-hidden="true">
+                <img src="image/peace_letter.png" alt="">
+            </div>
             <p class="peace-glyph bottom" data-char="화">화</p>
         </section>
     </main>
@@ -339,12 +387,13 @@
             const truthCanvas = stack ? stack.querySelector(".truth-canvas") : null;
             const topSource = stack ? stack.querySelector(".truth-source-top") : null;
             const bottomSource = stack ? stack.querySelector(".truth-source-bottom") : null;
-            if (!stack || !topGlyph || !bottomGlyph || !truthCanvas || !topSource || !bottomSource) return;
+            const posterStage = stack ? stack.querySelector(".poster-stage") : null;
+            if (!stack || !topGlyph || !bottomGlyph || !truthCanvas || !topSource || !bottomSource || !posterStage) return;
 
             let sourceMetrics = null;
             let preparePromise = null;
             let renderPlan = null;
-            let revealed = false;
+            let revealState = 0;
 
             const shouldIgnore = (target) => {
                 if (!(target instanceof Element)) return false;
@@ -506,13 +555,21 @@
                     }, 440);
                 };
 
-                if (!revealed) {
+                if (revealState === 0) {
                     prepare().then(() => {
                         drawFull();
-                        revealed = true;
+                        revealState = 1;
+                        body.classList.remove("has-poster");
                         body.classList.add("has-truth");
                         revealNow();
                     });
+                    return;
+                }
+
+                if (revealState === 1) {
+                    revealState = 2;
+                    body.classList.add("has-poster");
+                    revealNow();
                     return;
                 }
 
@@ -527,7 +584,7 @@
             const onResize = () => {
                 if (!sourceMetrics) return;
                 buildRenderPlan();
-                if (revealed) drawFull();
+                if (revealState >= 1) drawFull();
             };
 
             window.addEventListener("click", triggerReveal, true);
